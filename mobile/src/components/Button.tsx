@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
-  TouchableOpacity,
+  Animated,
+  Pressable,
   Text,
   StyleSheet,
   ActivityIndicator,
@@ -8,7 +9,7 @@ import {
   TextStyle,
 } from 'react-native';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
 
 interface ButtonProps {
   title: string;
@@ -30,8 +31,12 @@ const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: TextSty
     text: { color: '#fff' },
   },
   outline: {
-    container: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#2563eb' },
+    container: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#2563eb' },
     text: { color: '#2563eb' },
+  },
+  danger: {
+    container: { backgroundColor: '#ef4444' },
+    text: { color: '#fff' },
   },
 };
 
@@ -44,20 +49,50 @@ export function Button({
   style,
   textStyle,
 }: ButtonProps) {
+  const scale = useRef(new Animated.Value(1)).current;
   const v = variantStyles[variant];
+
+  const handlePressIn = () => {
+    Animated.spring(scale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 40,
+      bounciness: 4,
+    }).start();
+  };
+
   return (
-    <TouchableOpacity
-      style={[styles.container, v.container, disabled && styles.disabled, style]}
+    <Pressable
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
-      activeOpacity={0.7}
     >
-      {loading ? (
-        <ActivityIndicator color={v.text.color} />
-      ) : (
-        <Text style={[styles.text, v.text, textStyle]}>{title}</Text>
-      )}
-    </TouchableOpacity>
+      <Animated.View
+        style={[
+          styles.container,
+          v.container,
+          disabled && styles.disabled,
+          { transform: [{ scale }] },
+          style,
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator color={v.text.color as string} />
+        ) : (
+          <Text style={[styles.text, v.text, textStyle]}>{title}</Text>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 }
 
@@ -68,13 +103,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
+    minHeight: 50,
   },
   text: {
     fontSize: 16,
     fontWeight: '600',
+    letterSpacing: 0.1,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: 0.45,
   },
 });
