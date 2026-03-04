@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException
 from supabase import Client
 from app.models.diagnosis import (
     DiagnoseRequest,
@@ -12,20 +12,8 @@ from app.services.diagnosis_service import diagnose_issue
 router = APIRouter()
 
 
-def get_supabase() -> Client:
-    """
-    Dependency that provides Supabase client.
-    Will be overridden by main.py's get_supabase function.
-    """
-    # This is a placeholder - main.py will inject the actual client
-    pass
-
-
 @router.post("/diagnose", response_model=DiagnoseResponse)
-async def diagnose(
-    request: DiagnoseRequest,
-    supabase: Client = Depends(get_supabase)
-):
+async def diagnose(request: DiagnoseRequest):
     """
     Diagnose washing machine issues based on customer complaint.
     
@@ -65,6 +53,9 @@ async def diagnose(
     3. Return top 3 matches with confidence scores
     4. Recommend DIY or technician based on severity/difficulty
     """
+    # Import supabase from main module
+    from main import supabase
+    
     try:
         # Call service layer to do actual diagnosis
         error_match, issues, recommendation = diagnose_issue(

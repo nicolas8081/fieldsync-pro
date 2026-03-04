@@ -1,0 +1,501 @@
+complaint,error_code,actual_issue_id,data_source,source_url,verified
+"Shaking violently during spin, moving across the floor",,46,synthetic,,True
+Clothes don't get clean anymore What should I do?,,32,synthetic,,True
+Water pooling under the machine Warranty just expired of course,,62,synthetic,,True
+Door won't unlock even though wash is complete How do I fix this?,,7,synthetic,,True
+"Completely dead, no power, nothing happens Is this fixable?",,15,synthetic,,True
+"F21 error showing, water won't drain Need help ASAP",,71,synthetic,,True
+"No lights, no sounds, won't start Warranty just expired of course",,15,synthetic,,True
+"F21 code flashing, what does this mean? Please help!",F21,70,synthetic,,True
+Error F21 showing on display Warranty just expired of course,F21,70,synthetic,,True
+Water pooling under the machine Warranty just expired of course,,63,synthetic,,True
+"Samsung showing dE, door won't unlock What should I do?",dE,7,synthetic,,True
+"F21 error code, won't drain How do I fix this?",F21,70,synthetic,,True
+"Door won't close properly, keeps popping open What should I do?",,1,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Need help ASAP",,70,synthetic,,True
+Wash cycle finishes but clothes still dirty Need help ASAP,,32,synthetic,,True
+Won't move to the next cycle phase What should I do?,,41,synthetic,,True
+"Stuck on the start screen, won't begin washing What should I do?",,17,synthetic,,True
+Vibrates so badly it walks across the laundry room,,46,synthetic,,True
+"Completely dead, no power, nothing happens What should I do?",,15,synthetic,,True
+Water pooling under the machine What should I do?,,62,synthetic,,True
+"Getting dE error, what's wrong? Please help!",dE,7,synthetic,,True
+Clothes have white residue all over them Need help ASAP,,31,synthetic,,True
+Stains not coming out like they used to Please help!,,33,synthetic,,True
+"Error code F22, cycle won't start Please help!",F22,2,synthetic,,True
+"Water won't drain, clothes are soaking wet How do I fix this?",,71,synthetic,,True
+Water pooling under the machine Is this fixable?,,62,synthetic,,True
+Getting F22 on the screen Any ideas?,F22,2,synthetic,,True
+"Cycle time keeps extending, never finishes on time Is this fixable?",,40,synthetic,,True
+Door is stuck locked after cycle finished What should I do?,,7,synthetic,,True
+Wash cycle finishes but clothes still dirty Please help!,,33,synthetic,,True
+"Completely dead, no power, nothing happens What should I do?",,15,synthetic,,True
+Horrible grinding noise when running What should I do?,,48,synthetic,,True
+"Water won't drain, clothes are soaking wet Is this fixable?",,70,synthetic,,True
+"Samsung showing dE, door won't unlock How do I fix this?",dE,7,synthetic,,True
+Lights work but pressing start does nothing How do I fix this?,,17,synthetic,,True
+Won't move to the next cycle phase How do I fix this?,,41,synthetic,,True
+"Washer won't turn on at all, no lights What should I do?",,15,synthetic,,True
+"Stuck on the start screen, won't begin washing Any ideas?",,16,synthetic,,True
+"Samsung showing dE, door won't unlock Is this fixable?",dE,7,synthetic,,True
+Door error dE code showing Please help!,dE,7,synthetic,,True
+"No lights, no sounds, won't start Any ideas?",,15,synthetic,,True
+"Getting F21, clothes soaking wet How do I fix this?",F21,70,synthetic,,True
+Door won't unlock even though wash is complete Any ideas?,,7,synthetic,,True
+"Loud banging when spinning, whole machine shakes",,46,synthetic,,True
+"F21 error showing, water won't drain Any ideas?",,71,synthetic,,True
+"Leaking from the bottom, big puddle Need help ASAP",,62,synthetic,,True
+"Cycle time keeps extending, never finishes on time",,40,synthetic,,True
+Vibrates so badly it walks across the laundry room Please help!,,46,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked Any ideas?",,7,synthetic,,True
+Won't move to the next cycle phase,,41,synthetic,,True
+"Completely dead, no power, nothing happens Is this fixable?",,15,synthetic,,True
+"Washer won't turn on at all, no lights Please help!",,15,synthetic,,True
+Clothes don't get clean anymore Need help ASAP,,32,synthetic,,True
+"Detergent not rinsing out, leaves white marks Warranty just expired of course",,30,synthetic,,True
+Lights work but pressing start does nothing Is this fixable?,,17,synthetic,,True
+Puddle forming under the door every cycle Any ideas?,,60,synthetic,,True
+"Loud banging when spinning, whole machine shakes Need help ASAP",,46,synthetic,,True
+Soapy residue on clothes after wash Is this fixable?,,31,synthetic,,True
+"Wash cycle takes forever, over 3 hours Need help ASAP",,40,synthetic,,True
+"Makes terrible grinding noise, getting worse Warranty just expired of course",,48,synthetic,,True
+"Cycle time keeps extending, never finishes on time What should I do?",,40,synthetic,,True
+Door won't unlock even though wash is complete Warranty just expired of course,,7,synthetic,,True
+Vibrates so badly it walks across the laundry room Is this fixable?,,45,synthetic,,True
+Clothes have white residue all over them Is this fixable?,,31,synthetic,,True
+"Door seal is leaking, water on the floor Please help!",,61,synthetic,,True
+Getting F22 on the screen,F22,2,synthetic,,True
+Horrible grinding noise when running Need help ASAP,,47,synthetic,,True
+Clothes don't get clean anymore Please help!,,32,synthetic,,True
+Cycle runs way longer than it should What should I do?,,40,synthetic,,True
+"Getting F21, clothes soaking wet Please help!",F21,70,synthetic,,True
+"Detergent not rinsing out, leaves white marks",,31,synthetic,,True
+"Wash cycle takes forever, over 3 hours Is this fixable?",,40,synthetic,,True
+"F22 error, door won't lock Need help ASAP",F22,2,synthetic,,True
+F22 door lock error showing What should I do?,F22,2,synthetic,,True
+"Washer won't turn on at all, no lights Is this fixable?",,15,synthetic,,True
+Vibrates so badly it walks across the laundry room Any ideas?,,46,synthetic,,True
+Soapy residue on clothes after wash Any ideas?,,30,synthetic,,True
+Metal on metal scraping sound during wash What should I do?,,48,synthetic,,True
+Clothes have white residue all over them Please help!,,31,synthetic,,True
+"Not cleaning properly, clothes still smell",,32,synthetic,,True
+"Leaking from the bottom, big puddle How do I fix this?",,63,synthetic,,True
+"Completely dead, no power, nothing happens Please help!",,15,synthetic,,True
+Metal on metal scraping sound during wash Any ideas?,,47,synthetic,,True
+"Getting dE error, what's wrong? How do I fix this?",dE,7,synthetic,,True
+"Stuck on rinse, been going for an hour Warranty just expired of course",,41,synthetic,,True
+"Stuck on rinse, been going for an hour",,41,synthetic,,True
+"Stuck on rinse, been going for an hour Need help ASAP",,41,synthetic,,True
+Puddle forming under the door every cycle Is this fixable?,,61,synthetic,,True
+"Can't open the door, it's still locked and cycle is done Need help ASAP",,7,synthetic,,True
+"Getting F21, clothes soaking wet Need help ASAP",F21,70,synthetic,,True
+"Detergent not rinsing out, leaves white marks How do I fix this?",,31,synthetic,,True
+"Door seal is leaking, water on the floor What should I do?",,60,synthetic,,True
+Washer filled but won't drain the water out Need help ASAP,,70,synthetic,,True
+Says 45 minutes but actually takes 2+ hours Is this fixable?,,40,synthetic,,True
+"Not cleaning properly, clothes still smell Warranty just expired of course",,32,synthetic,,True
+Door locks but cycle won't begin Is this fixable?,,16,synthetic,,True
+"Pushed power button, nothing, totally dead Please help!",,15,synthetic,,True
+Vibrates so badly it walks across the laundry room Need help ASAP,,46,synthetic,,True
+"Not cleaning properly, clothes still smell Need help ASAP",,32,synthetic,,True
+"Water on floor after every load, not sure where from How do I fix this?",,63,synthetic,,True
+"Getting dE error, what's wrong? How do I fix this?",dE,7,synthetic,,True
+"Completely dead, no power, nothing happens Please help!",,15,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked What should I do?",,7,synthetic,,True
+Water pooling under the machine Is this fixable?,,62,synthetic,,True
+Clothes don't get clean anymore Warranty just expired of course,,33,synthetic,,True
+F22 door lock error showing Warranty just expired of course,F22,2,synthetic,,True
+Cycle pauses and won't restart Please help!,,41,synthetic,,True
+Cycle runs way longer than it should,,40,synthetic,,True
+"The door closes but won't lock, cycle won't start Warranty just expired of course",,1,synthetic,,True
+"The door closes but won't lock, cycle won't start Need help ASAP",,2,synthetic,,True
+"Wash cycle takes forever, over 3 hours Please help!",,40,synthetic,,True
+"Water on floor after every load, not sure where from How do I fix this?",,62,synthetic,,True
+Clothes come out with soap still on them Warranty just expired of course,,31,synthetic,,True
+"Loud banging when spinning, whole machine shakes Please help!",,45,synthetic,,True
+Won't move to the next cycle phase,,41,synthetic,,True
+Lights work but pressing start does nothing Please help!,,17,synthetic,,True
+Error F21 showing on display Is this fixable?,F21,70,synthetic,,True
+Cycle pauses and won't restart Need help ASAP,,41,synthetic,,True
+Sounds like it's going to explode during spin cycle What should I do?,,46,synthetic,,True
+"F21 code flashing, what does this mean? Need help ASAP",F21,70,synthetic,,True
+"Samsung showing dE, door won't unlock Need help ASAP",dE,7,synthetic,,True
+"Door latch seems broken, won't catch Warranty just expired of course",,1,synthetic,,True
+Error F21 showing on display,F21,70,synthetic,,True
+Door won't stay closed when I try to start a cycle Warranty just expired of course,,1,synthetic,,True
+Leak coming from somewhere underneath How do I fix this?,,62,synthetic,,True
+"Leaking from the bottom, big puddle Please help!",,63,synthetic,,True
+Water leaking from the door during wash Please help!,,61,synthetic,,True
+"Makes terrible grinding noise, getting worse What should I do?",,48,synthetic,,True
+"Leaking from the bottom, big puddle Please help!",,63,synthetic,,True
+Clothes come out with soap still on them Is this fixable?,,30,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked Please help!",,7,synthetic,,True
+Lights work but pressing start does nothing How do I fix this?,,17,synthetic,,True
+"Wash cycle takes forever, over 3 hours What should I do?",,40,synthetic,,True
+Water pooling under the machine Is this fixable?,,63,synthetic,,True
+Door locks but cycle won't begin Need help ASAP,,17,synthetic,,True
+Sounds like it's going to explode during spin cycle,,45,synthetic,,True
+"F21 code flashing, what does this mean? Any ideas?",F21,70,synthetic,,True
+Soapy residue on clothes after wash How do I fix this?,,31,synthetic,,True
+Door locks but cycle won't begin Any ideas?,,16,synthetic,,True
+"Pushed power button, nothing, totally dead",,15,synthetic,,True
+"Water on floor after every load, not sure where from Please help!",,63,synthetic,,True
+"Wash cycle takes forever, over 3 hours Need help ASAP",,40,synthetic,,True
+Soapy residue on clothes after wash Warranty just expired of course,,31,synthetic,,True
+Soapy residue on clothes after wash What should I do?,,30,synthetic,,True
+Clothes don't get clean anymore Warranty just expired of course,,32,synthetic,,True
+"Getting dE error, what's wrong? Warranty just expired of course",dE,7,synthetic,,True
+F22 door lock error showing How do I fix this?,F22,2,synthetic,,True
+Horrible grinding noise when running Warranty just expired of course,,47,synthetic,,True
+Metal on metal scraping sound during wash,,48,synthetic,,True
+"No lights, no sounds, won't start Any ideas?",,15,synthetic,,True
+Door won't stay closed when I try to start a cycle,,2,synthetic,,True
+"Getting F21, clothes soaking wet Warranty just expired of course",F21,70,synthetic,,True
+Cycle pauses and won't restart How do I fix this?,,41,synthetic,,True
+"Leaks around the door, especially during spin Need help ASAP",,61,synthetic,,True
+Horrible grinding noise when running Need help ASAP,,47,synthetic,,True
+"Loud banging when spinning, whole machine shakes How do I fix this?",,46,synthetic,,True
+Clothes have white residue all over them Need help ASAP,,30,synthetic,,True
+Getting F22 on the screen,F22,2,synthetic,,True
+"Shaking violently during spin, moving across the floor What should I do?",,45,synthetic,,True
+"Leaking from the bottom, big puddle Warranty just expired of course",,63,synthetic,,True
+Cycle runs way longer than it should Please help!,,40,synthetic,,True
+"Water won't drain, clothes are soaking wet What should I do?",,70,synthetic,,True
+"Makes terrible grinding noise, getting worse Need help ASAP",,47,synthetic,,True
+F22 door lock error showing,F22,2,synthetic,,True
+Error F21 showing on display Need help ASAP,F21,70,synthetic,,True
+"Completely dead, no power, nothing happens Warranty just expired of course",,15,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked Warranty just expired of course",,7,synthetic,,True
+"Pushed power button, nothing, totally dead Warranty just expired of course",,15,synthetic,,True
+"Completely dead, no power, nothing happens Any ideas?",,15,synthetic,,True
+"Leaks around the door, especially during spin Is this fixable?",,61,synthetic,,True
+"Loud banging when spinning, whole machine shakes",,45,synthetic,,True
+"The door closes but won't lock, cycle won't start Need help ASAP",,2,synthetic,,True
+dE error on Samsung washer What should I do?,dE,7,synthetic,,True
+Vibrates so badly it walks across the laundry room Any ideas?,,46,synthetic,,True
+"F22 error, door won't lock Is this fixable?",F22,2,synthetic,,True
+Cycle pauses and won't restart How do I fix this?,,41,synthetic,,True
+Washer filled but won't drain the water out Is this fixable?,,70,synthetic,,True
+"Not cleaning properly, clothes still smell",,33,synthetic,,True
+"Leaks around the door, especially during spin",,60,synthetic,,True
+Water pooling under the machine Please help!,,62,synthetic,,True
+Puddle forming under the door every cycle How do I fix this?,,61,synthetic,,True
+Cycle pauses and won't restart How do I fix this?,,41,synthetic,,True
+Door locks but cycle won't begin,,16,synthetic,,True
+Metal on metal scraping sound during wash What should I do?,,47,synthetic,,True
+Door is stuck locked after cycle finished Warranty just expired of course,,7,synthetic,,True
+Clothes come out with soap still on them Warranty just expired of course,,30,synthetic,,True
+Clothes come out with soap still on them What should I do?,,30,synthetic,,True
+Sounds like it's going to explode during spin cycle Is this fixable?,,46,synthetic,,True
+"Standing water in the drum, won't drain Any ideas?",,71,synthetic,,True
+"Loud banging when spinning, whole machine shakes Need help ASAP",,45,synthetic,,True
+Cycle pauses and won't restart How do I fix this?,,41,synthetic,,True
+Door error dE code showing,dE,7,synthetic,,True
+"Leaks around the door, especially during spin Need help ASAP",,61,synthetic,,True
+Won't move to the next cycle phase Any ideas?,,41,synthetic,,True
+"Shaking violently during spin, moving across the floor Any ideas?",,45,synthetic,,True
+Says 45 minutes but actually takes 2+ hours Please help!,,40,synthetic,,True
+Clothes have white residue all over them How do I fix this?,,31,synthetic,,True
+"F21 error showing, water won't drain Warranty just expired of course",,71,synthetic,,True
+"Getting F21, clothes soaking wet Warranty just expired of course",F21,70,synthetic,,True
+dE error on Samsung washer Any ideas?,dE,7,synthetic,,True
+"Getting dE error, what's wrong? How do I fix this?",dE,7,synthetic,,True
+"No lights, no sounds, won't start Any ideas?",,15,synthetic,,True
+Getting F21 code and water pooling at bottom Any ideas?,,70,synthetic,,True
+"Water on floor after every load, not sure where from Please help!",,63,synthetic,,True
+"Not cleaning properly, clothes still smell Any ideas?",,33,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked Please help!",,7,synthetic,,True
+Error F21 showing on display Please help!,F21,70,synthetic,,True
+Door is stuck locked after cycle finished Any ideas?,,7,synthetic,,True
+"Leaks around the door, especially during spin Please help!",,60,synthetic,,True
+Metal on metal scraping sound during wash Warranty just expired of course,,47,synthetic,,True
+"The door closes but won't lock, cycle won't start",,1,synthetic,,True
+"Stuck on the start screen, won't begin washing Please help!",,17,synthetic,,True
+dE error on Samsung washer What should I do?,dE,7,synthetic,,True
+Clothes don't get clean anymore How do I fix this?,,33,synthetic,,True
+Sounds like it's going to explode during spin cycle,,45,synthetic,,True
+Door won't unlock even though wash is complete What should I do?,,7,synthetic,,True
+"Door seal is leaking, water on the floor What should I do?",,60,synthetic,,True
+"Standing water in the drum, won't drain Need help ASAP",,70,synthetic,,True
+"Can't open the door, it's still locked and cycle is done Need help ASAP",,7,synthetic,,True
+Horrible grinding noise when running Warranty just expired of course,,47,synthetic,,True
+"No lights, no sounds, won't start Is this fixable?",,15,synthetic,,True
+"Water on floor after every load, not sure where from Is this fixable?",,63,synthetic,,True
+"Wash cycle takes forever, over 3 hours",,40,synthetic,,True
+"Can't open the door, it's still locked and cycle is done Need help ASAP",,7,synthetic,,True
+Grinding and squealing during agitation Please help!,,47,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Any ideas?",,71,synthetic,,True
+Sounds like it's going to explode during spin cycle Please help!,,46,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Please help!",,70,synthetic,,True
+"Samsung showing dE, door won't unlock Any ideas?",dE,7,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked",,7,synthetic,,True
+"Leaking from the bottom, big puddle What should I do?",,62,synthetic,,True
+Door won't unlock even though wash is complete Please help!,,7,synthetic,,True
+"Door won't close properly, keeps popping open Warranty just expired of course",,2,synthetic,,True
+Water pooling under the machine Any ideas?,,62,synthetic,,True
+Cycle pauses and won't restart Any ideas?,,41,synthetic,,True
+"Samsung showing dE, door won't unlock How do I fix this?",dE,7,synthetic,,True
+F22 door lock error showing Need help ASAP,F22,2,synthetic,,True
+Clothes have white residue all over them How do I fix this?,,31,synthetic,,True
+Lights work but pressing start does nothing Please help!,,17,synthetic,,True
+dE error on Samsung washer Need help ASAP,dE,7,synthetic,,True
+dE error on Samsung washer Please help!,dE,7,synthetic,,True
+Won't move to the next cycle phase Warranty just expired of course,,41,synthetic,,True
+"F21 error code, won't drain Need help ASAP",F21,70,synthetic,,True
+Leak coming from somewhere underneath Please help!,,62,synthetic,,True
+"Door won't close properly, keeps popping open",,1,synthetic,,True
+"Door latch seems broken, won't catch Please help!",,2,synthetic,,True
+Says 45 minutes but actually takes 2+ hours How do I fix this?,,40,synthetic,,True
+Washer filled but won't drain the water out Please help!,,71,synthetic,,True
+Soapy residue on clothes after wash,,30,synthetic,,True
+Water pooling under the machine Is this fixable?,,63,synthetic,,True
+Stains not coming out like they used to Is this fixable?,,32,synthetic,,True
+"F21 error code, won't drain How do I fix this?",F21,70,synthetic,,True
+"F21 error code, won't drain Please help!",F21,70,synthetic,,True
+Lights work but pressing start does nothing How do I fix this?,,16,synthetic,,True
+Says 45 minutes but actually takes 2+ hours What should I do?,,40,synthetic,,True
+"Can't get the door to latch, it bounces back Warranty just expired of course",,1,synthetic,,True
+"Pushed power button, nothing, totally dead Is this fixable?",,15,synthetic,,True
+"Standing water in the drum, won't drain",,70,synthetic,,True
+Won't move to the next cycle phase How do I fix this?,,41,synthetic,,True
+"F21 error code, won't drain Is this fixable?",F21,70,synthetic,,True
+"Washer won't turn on at all, no lights Warranty just expired of course",,15,synthetic,,True
+Turns on but won't start the wash cycle Any ideas?,,17,synthetic,,True
+Metal on metal scraping sound during wash Is this fixable?,,47,synthetic,,True
+Washer filled but won't drain the water out What should I do?,,71,synthetic,,True
+Getting F22 on the screen Any ideas?,F22,2,synthetic,,True
+"Water on floor after every load, not sure where from Need help ASAP",,63,synthetic,,True
+"F21 code flashing, what does this mean? Warranty just expired of course",F21,70,synthetic,,True
+"Wash cycle takes forever, over 3 hours Is this fixable?",,40,synthetic,,True
+"Stuck on the start screen, won't begin washing What should I do?",,16,synthetic,,True
+Door is stuck locked after cycle finished Any ideas?,,7,synthetic,,True
+"Shaking violently during spin, moving across the floor Please help!",,45,synthetic,,True
+"Shaking violently during spin, moving across the floor Need help ASAP",,46,synthetic,,True
+Clothes have white residue all over them What should I do?,,30,synthetic,,True
+"Standing water in the drum, won't drain What should I do?",,70,synthetic,,True
+Cycle pauses and won't restart Is this fixable?,,41,synthetic,,True
+"Door won't close properly, keeps popping open Please help!",,1,synthetic,,True
+"Detergent not rinsing out, leaves white marks Any ideas?",,30,synthetic,,True
+Wash cycle finishes but clothes still dirty,,32,synthetic,,True
+Door error dE code showing What should I do?,dE,7,synthetic,,True
+"Cycle gets stuck on drain, water just sits there How do I fix this?",,70,synthetic,,True
+Clothes come out with soap still on them How do I fix this?,,31,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Warranty just expired of course",,71,synthetic,,True
+Stains not coming out like they used to Need help ASAP,,33,synthetic,,True
+"Stuck on the start screen, won't begin washing What should I do?",,16,synthetic,,True
+"Can't get the door to latch, it bounces back Warranty just expired of course",,2,synthetic,,True
+"Not cleaning properly, clothes still smell How do I fix this?",,33,synthetic,,True
+"Wash cycle takes forever, over 3 hours Please help!",,40,synthetic,,True
+Door won't unlock even though wash is complete Need help ASAP,,7,synthetic,,True
+Getting F21 code and water pooling at bottom,,70,synthetic,,True
+"Not cleaning properly, clothes still smell Please help!",,33,synthetic,,True
+"F21 error code, won't drain Please help!",F21,70,synthetic,,True
+"Error code F22, cycle won't start How do I fix this?",F22,2,synthetic,,True
+Water pooling under the machine How do I fix this?,,62,synthetic,,True
+"Gets stuck mid-cycle, won't advance Need help ASAP",,41,synthetic,,True
+"Shaking violently during spin, moving across the floor Please help!",,45,synthetic,,True
+Cycle runs way longer than it should How do I fix this?,,40,synthetic,,True
+"F21 error code, won't drain Warranty just expired of course",F21,70,synthetic,,True
+"Stuck on rinse, been going for an hour Need help ASAP",,41,synthetic,,True
+Wash cycle finishes but clothes still dirty Need help ASAP,,32,synthetic,,True
+Getting F22 on the screen,F22,2,synthetic,,True
+"Detergent not rinsing out, leaves white marks How do I fix this?",,31,synthetic,,True
+Won't move to the next cycle phase Please help!,,41,synthetic,,True
+"Getting F21, clothes soaking wet",F21,70,synthetic,,True
+Won't move to the next cycle phase Please help!,,41,synthetic,,True
+"Not cleaning properly, clothes still smell Is this fixable?",,33,synthetic,,True
+Door error dE code showing Any ideas?,dE,7,synthetic,,True
+"Loud banging when spinning, whole machine shakes Any ideas?",,45,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked Please help!",,7,synthetic,,True
+"Shaking violently during spin, moving across the floor What should I do?",,46,synthetic,,True
+Door error dE code showing How do I fix this?,dE,7,synthetic,,True
+Lights work but pressing start does nothing How do I fix this?,,16,synthetic,,True
+"Loud banging when spinning, whole machine shakes Please help!",,45,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Warranty just expired of course",,71,synthetic,,True
+Says 45 minutes but actually takes 2+ hours Warranty just expired of course,,40,synthetic,,True
+"Cycle time keeps extending, never finishes on time",,40,synthetic,,True
+"Shaking violently during spin, moving across the floor Any ideas?",,46,synthetic,,True
+"Stuck on rinse, been going for an hour Need help ASAP",,41,synthetic,,True
+"Door latch seems broken, won't catch",,1,synthetic,,True
+"Stuck on the start screen, won't begin washing Is this fixable?",,16,synthetic,,True
+"No lights, no sounds, won't start Warranty just expired of course",,15,synthetic,,True
+dE error on Samsung washer Is this fixable?,dE,7,synthetic,,True
+"Makes terrible grinding noise, getting worse What should I do?",,47,synthetic,,True
+Door error dE code showing Please help!,dE,7,synthetic,,True
+"Washer won't turn on at all, no lights What should I do?",,15,synthetic,,True
+"The door closes but won't lock, cycle won't start What should I do?",,1,synthetic,,True
+Washer filled but won't drain the water out Need help ASAP,,70,synthetic,,True
+"Loud banging when spinning, whole machine shakes Is this fixable?",,45,synthetic,,True
+"Completely dead, no power, nothing happens Need help ASAP",,15,synthetic,,True
+"The door closes but won't lock, cycle won't start Warranty just expired of course",,2,synthetic,,True
+"Stuck on rinse, been going for an hour How do I fix this?",,41,synthetic,,True
+F22 door lock error showing Is this fixable?,F22,2,synthetic,,True
+Door won't unlock even though wash is complete How do I fix this?,,7,synthetic,,True
+Door is stuck locked after cycle finished Please help!,,7,synthetic,,True
+Door won't stay closed when I try to start a cycle,,1,synthetic,,True
+"Makes terrible grinding noise, getting worse Warranty just expired of course",,48,synthetic,,True
+dE error on Samsung washer What should I do?,dE,7,synthetic,,True
+Clothes don't get clean anymore Any ideas?,,32,synthetic,,True
+"Getting dE error, what's wrong? Warranty just expired of course",dE,7,synthetic,,True
+"Getting F21, clothes soaking wet Any ideas?",F21,70,synthetic,,True
+"F22 error, door won't lock Please help!",F22,2,synthetic,,True
+"Standing water in the drum, won't drain Any ideas?",,70,synthetic,,True
+Cycle pauses and won't restart What should I do?,,41,synthetic,,True
+Clothes don't get clean anymore Please help!,,32,synthetic,,True
+Getting F22 on the screen Need help ASAP,F22,2,synthetic,,True
+"Standing water in the drum, won't drain",,70,synthetic,,True
+Clothes come out with soap still on them Please help!,,30,synthetic,,True
+Door is stuck locked after cycle finished Any ideas?,,7,synthetic,,True
+Leak coming from somewhere underneath Is this fixable?,,63,synthetic,,True
+"Washer won't turn on at all, no lights What should I do?",,15,synthetic,,True
+"Water on floor after every load, not sure where from Need help ASAP",,62,synthetic,,True
+Door is stuck locked after cycle finished What should I do?,,7,synthetic,,True
+"Detergent not rinsing out, leaves white marks How do I fix this?",,31,synthetic,,True
+Clothes come out with soap still on them Need help ASAP,,30,synthetic,,True
+"Detergent not rinsing out, leaves white marks Any ideas?",,31,synthetic,,True
+"Can't open the door, it's still locked and cycle is done What should I do?",,7,synthetic,,True
+Getting F22 on the screen,F22,2,synthetic,,True
+"Can't get the door to latch, it bounces back",,1,synthetic,,True
+Clothes come out with soap still on them What should I do?,,31,synthetic,,True
+Soapy residue on clothes after wash Any ideas?,,30,synthetic,,True
+"Loud banging when spinning, whole machine shakes Please help!",,46,synthetic,,True
+Leak coming from somewhere underneath Warranty just expired of course,,62,synthetic,,True
+"Completely dead, no power, nothing happens How do I fix this?",,15,synthetic,,True
+Cycle runs way longer than it should What should I do?,,40,synthetic,,True
+"Getting dE error, what's wrong? How do I fix this?",dE,7,synthetic,,True
+Cycle pauses and won't restart Need help ASAP,,41,synthetic,,True
+Leak coming from somewhere underneath Warranty just expired of course,,63,synthetic,,True
+"Door latch seems broken, won't catch Warranty just expired of course",,1,synthetic,,True
+Soapy residue on clothes after wash,,31,synthetic,,True
+Says 45 minutes but actually takes 2+ hours How do I fix this?,,40,synthetic,,True
+"Error code F22, cycle won't start What should I do?",F22,2,synthetic,,True
+"Getting dE error, what's wrong? What should I do?",dE,7,synthetic,,True
+Metal on metal scraping sound during wash How do I fix this?,,48,synthetic,,True
+"Leaking from the bottom, big puddle Need help ASAP",,63,synthetic,,True
+Clothes don't get clean anymore,,33,synthetic,,True
+Clothes come out with soap still on them Warranty just expired of course,,30,synthetic,,True
+Water leaking from the door during wash What should I do?,,61,synthetic,,True
+Says 45 minutes but actually takes 2+ hours Need help ASAP,,40,synthetic,,True
+"Leaks around the door, especially during spin Is this fixable?",,61,synthetic,,True
+Door won't unlock even though wash is complete What should I do?,,7,synthetic,,True
+Door won't unlock even though wash is complete Please help!,,7,synthetic,,True
+"Wash cycle takes forever, over 3 hours Need help ASAP",,40,synthetic,,True
+"Gets stuck mid-cycle, won't advance What should I do?",,41,synthetic,,True
+Sounds like it's going to explode during spin cycle How do I fix this?,,45,synthetic,,True
+Sounds like it's going to explode during spin cycle Warranty just expired of course,,45,synthetic,,True
+F22 door lock error showing Is this fixable?,F22,2,synthetic,,True
+Door won't unlock even though wash is complete How do I fix this?,,7,synthetic,,True
+Washer filled but won't drain the water out Please help!,,71,synthetic,,True
+Getting F22 on the screen How do I fix this?,F22,2,synthetic,,True
+"Leaking from the bottom, big puddle Need help ASAP",,63,synthetic,,True
+"Door won't close properly, keeps popping open Need help ASAP",,1,synthetic,,True
+Door error dE code showing What should I do?,dE,7,synthetic,,True
+Soapy residue on clothes after wash Please help!,,30,synthetic,,True
+"Wash cycle takes forever, over 3 hours How do I fix this?",,40,synthetic,,True
+"Can't open the door, it's still locked and cycle is done What should I do?",,7,synthetic,,True
+Clothes have white residue all over them Is this fixable?,,30,synthetic,,True
+"Stuck on the start screen, won't begin washing What should I do?",,16,synthetic,,True
+Water leaking from the door during wash,,61,synthetic,,True
+Door is stuck locked after cycle finished Warranty just expired of course,,7,synthetic,,True
+Water leaking from the door during wash How do I fix this?,,60,synthetic,,True
+"Can't get the door to latch, it bounces back Is this fixable?",,1,synthetic,,True
+Horrible grinding noise when running Need help ASAP,,47,synthetic,,True
+"Pushed power button, nothing, totally dead Is this fixable?",,15,synthetic,,True
+Clothes come out with soap still on them Need help ASAP,,30,synthetic,,True
+"Gets stuck mid-cycle, won't advance Is this fixable?",,41,synthetic,,True
+"Getting dE error, what's wrong? Need help ASAP",dE,7,synthetic,,True
+Lights work but pressing start does nothing,,17,synthetic,,True
+"The door closes but won't lock, cycle won't start",,1,synthetic,,True
+"F21 code flashing, what does this mean?",F21,70,synthetic,,True
+Clothes come out with soap still on them Need help ASAP,,31,synthetic,,True
+Door error dE code showing What should I do?,dE,7,synthetic,,True
+"Leaking from the bottom, big puddle",,63,synthetic,,True
+"Water won't drain, clothes are soaking wet",,70,synthetic,,True
+"Can't open the door, it's still locked and cycle is done Warranty just expired of course",,7,synthetic,,True
+"Pushed power button, nothing, totally dead Please help!",,15,synthetic,,True
+"Stuck on the start screen, won't begin washing Warranty just expired of course",,17,synthetic,,True
+"Door won't close properly, keeps popping open Please help!",,2,synthetic,,True
+Soapy residue on clothes after wash,,31,synthetic,,True
+"Leaks around the door, especially during spin How do I fix this?",,61,synthetic,,True
+"Can't get the door to latch, it bounces back Any ideas?",,1,synthetic,,True
+Won't move to the next cycle phase What should I do?,,41,synthetic,,True
+Stains not coming out like they used to Is this fixable?,,32,synthetic,,True
+"Door latch seems broken, won't catch What should I do?",,1,synthetic,,True
+Wash cycle finishes but clothes still dirty How do I fix this?,,32,synthetic,,True
+"Stuck on the start screen, won't begin washing Please help!",,17,synthetic,,True
+"Stuck on the start screen, won't begin washing What should I do?",,16,synthetic,,True
+"Pushed power button, nothing, totally dead Warranty just expired of course",,15,synthetic,,True
+Says 45 minutes but actually takes 2+ hours What should I do?,,40,synthetic,,True
+Won't move to the next cycle phase How do I fix this?,,41,synthetic,,True
+F22 door lock error showing Warranty just expired of course,F22,2,synthetic,,True
+Stains not coming out like they used to Please help!,,33,synthetic,,True
+"Samsung showing dE, door won't unlock Warranty just expired of course",dE,7,synthetic,,True
+"F21 code flashing, what does this mean? Please help!",F21,70,synthetic,,True
+"F21 error showing, water won't drain Any ideas?",,70,synthetic,,True
+"Leaking from the bottom, big puddle Any ideas?",,63,synthetic,,True
+"Leaking from the bottom, big puddle How do I fix this?",,63,synthetic,,True
+"Leaks around the door, especially during spin What should I do?",,60,synthetic,,True
+"No lights, no sounds, won't start Please help!",,15,synthetic,,True
+"Detergent not rinsing out, leaves white marks What should I do?",,31,synthetic,,True
+Turns on but won't start the wash cycle What should I do?,,17,synthetic,,True
+"Door latch seems broken, won't catch Is this fixable?",,1,synthetic,,True
+"Can't open the door, it's still locked and cycle is done Any ideas?",,7,synthetic,,True
+"Can't get the door to latch, it bounces back Please help!",,1,synthetic,,True
+"Samsung showing dE, door won't unlock",dE,7,synthetic,,True
+Says 45 minutes but actually takes 2+ hours Need help ASAP,,40,synthetic,,True
+Leak coming from somewhere underneath Warranty just expired of course,,62,synthetic,,True
+"Standing water in the drum, won't drain What should I do?",,71,synthetic,,True
+"Cycle gets stuck on drain, water just sits there Need help ASAP",,70,synthetic,,True
+Clothes have white residue all over them,,30,synthetic,,True
+Sounds like it's going to explode during spin cycle Warranty just expired of course,,45,synthetic,,True
+"Makes terrible grinding noise, getting worse Is this fixable?",,48,synthetic,,True
+"Stuck on the start screen, won't begin washing Please help!",,17,synthetic,,True
+"Shaking violently during spin, moving across the floor Is this fixable?",,46,synthetic,,True
+Door won't unlock even though wash is complete Is this fixable?,,7,synthetic,,True
+Puddle forming under the door every cycle Need help ASAP,,60,synthetic,,True
+Leak coming from somewhere underneath Warranty just expired of course,,62,synthetic,,True
+"Can't get the door to latch, it bounces back",,2,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked",,7,synthetic,,True
+Soapy residue on clothes after wash Any ideas?,,30,synthetic,,True
+"Getting F21, clothes soaking wet Any ideas?",F21,70,synthetic,,True
+"F22 error, door won't lock What should I do?",F22,2,synthetic,,True
+Leak coming from somewhere underneath Is this fixable?,,62,synthetic,,True
+"Leaking from the bottom, big puddle",,62,synthetic,,True
+"Door won't close properly, keeps popping open",,1,synthetic,,True
+Lights work but pressing start does nothing Please help!,,16,synthetic,,True
+"F22 error, door won't lock Please help!",F22,2,synthetic,,True
+"Door seal is leaking, water on the floor How do I fix this?",,61,synthetic,,True
+"Cycle time keeps extending, never finishes on time Is this fixable?",,40,synthetic,,True
+"Error code F22, cycle won't start Any ideas?",F22,2,synthetic,,True
+Horrible grinding noise when running Warranty just expired of course,,47,synthetic,,True
+"Stuck on rinse, been going for an hour",,41,synthetic,,True
+dE error on Samsung washer Is this fixable?,dE,7,synthetic,,True
+Error F21 showing on display Any ideas?,F21,70,synthetic,,True
+"Stuck door, cycle ended 10 minutes ago but still locked",,7,synthetic,,True
+Water pooling under the machine What should I do?,,62,synthetic,,True
+"F22 error, door won't lock",F22,2,synthetic,,True
+"Getting F21, clothes soaking wet Warranty just expired of course",F21,70,synthetic,,True
+"Makes terrible grinding noise, getting worse",,48,synthetic,,True
+Door won't unlock even though wash is complete Need help ASAP,,7,synthetic,,True
+"Door seal is leaking, water on the floor How do I fix this?",,60,synthetic,,True
+"Shaking violently during spin, moving across the floor Any ideas?",,45,synthetic,,True
+"Stuck on rinse, been going for an hour How do I fix this?",,41,synthetic,,True
+Water pooling under the machine Please help!,,63,synthetic,,True
+"Leaks around the door, especially during spin",,61,synthetic,,True
+"F22 error, door won't lock",F22,2,synthetic,,True
+"Stuck on the start screen, won't begin washing Need help ASAP",,17,synthetic,,True
+Won't move to the next cycle phase Need help ASAP,,41,synthetic,,True
+"Getting F21, clothes soaking wet Any ideas?",F21,70,synthetic,,True
+"Loud banging when spinning, whole machine shakes Please help!",,45,synthetic,,True
+Leak coming from somewhere underneath Warranty just expired of course,,63,synthetic,,True
+"Loud banging when spinning, whole machine shakes Warranty just expired of course",,46,synthetic,,True
+Stains not coming out like they used to Need help ASAP,,33,synthetic,,True
+Washer filled but won't drain the water out Please help!,,71,synthetic,,True
+"Makes terrible grinding noise, getting worse What should I do?",,47,synthetic,,True
+"Door latch seems broken, won't catch How do I fix this?",,1,synthetic,,True
+"Can't open the door, it's still locked and cycle is done",,7,synthetic,,True
+Washer filled but won't drain the water out,,71,synthetic,,True
+Vibrates so badly it walks across the laundry room,,46,synthetic,,True
+F22 door lock error showing Need help ASAP,F22,2,synthetic,,True
+Sounds like it's going to explode during spin cycle Warranty just expired of course,,45,synthetic,,True
+"Loud banging when spinning, whole machine shakes What should I do?",,45,synthetic,,True
