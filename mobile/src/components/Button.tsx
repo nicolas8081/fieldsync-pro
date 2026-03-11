@@ -8,8 +8,9 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { colors } from '../theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'orange' | 'green';
 
 interface ButtonProps {
   title: string;
@@ -23,20 +24,24 @@ interface ButtonProps {
 
 const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: TextStyle }> = {
   primary: {
-    container: { backgroundColor: '#2563eb' },
-    text: { color: '#fff' },
+    container: { backgroundColor: colors.accent },
+    text: { color: colors.navy },
   },
   secondary: {
-    container: { backgroundColor: '#64748b' },
-    text: { color: '#fff' },
+    container: { backgroundColor: colors.soft, borderWidth: 1, borderColor: colors.border },
+    text: { color: colors.text },
   },
   outline: {
-    container: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: '#2563eb' },
-    text: { color: '#2563eb' },
+    container: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.accent },
+    text: { color: colors.accent },
   },
-  danger: {
-    container: { backgroundColor: '#ef4444' },
+  orange: {
+    container: { backgroundColor: colors.orange },
     text: { color: '#fff' },
+  },
+  green: {
+    container: { backgroundColor: colors.green },
+    text: { color: colors.navy },
   },
 };
 
@@ -98,16 +103,16 @@ export function Button({
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 50,
+    minHeight: 46,
   },
   text: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     letterSpacing: 0.1,
   },
   disabled: {

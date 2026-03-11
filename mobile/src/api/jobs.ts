@@ -1,4 +1,4 @@
-import { Job } from '../types/job';
+import { Job, DiagnosisItem } from '../types/job';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -6,21 +6,23 @@ const MOCK_JOBS: Job[] = [
   {
     id: '1',
     title: 'Washing machine repair - Drain issue',
-    customer: 'Jane Smith',
-    address: '123 Oak St, Apt 4B',
+    customer: 'Sarah K.',
+    address: '342 Maple St',
     status: 'scheduled',
-    scheduledAt: '2025-02-21T09:00:00Z',
+    scheduledAt: '2025-02-21T14:00:00Z',
     modelUrl: 'https://example.com/models/washer.glb',
-    description: 'Customer reports F21 error, water not draining.',
+    description: 'Samsung washer — leaking + banging noise',
+    severity: 'high',
   },
   {
     id: '2',
     title: 'Dryer heating element replacement',
     customer: 'Bob Johnson',
-    address: '456 Pine Ave',
-    status: 'in_progress',
-    scheduledAt: '2025-02-20T14:00:00Z',
-    description: 'Dryer runs but no heat.',
+    address: '88 Oak Avenue',
+    status: 'scheduled',
+    scheduledAt: '2025-02-21T16:30:00Z',
+    description: 'GE dishwasher — not cleaning top rack',
+    severity: 'med',
   },
   {
     id: '3',
@@ -54,4 +56,13 @@ export async function fetchJobById(id: string): Promise<Job | null> {
     // Fallback to mock
   }
   return MOCK_JOBS.find((j) => j.id === id) ?? null;
+}
+
+/** Mock AI diagnosis for job detail (Screen 7 style) */
+export function getDiagnosisForJob(_jobId: string): DiagnosisItem[] {
+  return [
+    { issue: 'Drum Bearing Failure', confidence: 87, parts: ['DC97-16151A Bearing', 'Grease Kit'] },
+    { issue: 'Door Boot Seal Tear', confidence: 64, parts: ['DC64-00802A Seal'] },
+    { issue: 'Drain Pump Failure', confidence: 41 },
+  ];
 }

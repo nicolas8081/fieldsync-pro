@@ -1,51 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Card } from '../components/Card';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
-import { fetchJobById } from '../api/jobs';
+import { fetchJobById, getDiagnosisForJob } from '../api/jobs';
 import { Job } from '../types/job';
 import { RootStackParamList } from '../navigation/types';
+import { colors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JobDetail'>;
 
-const statusColors: Record<Job['status'], string> = {
-  scheduled: '#3b82f6',
-  in_progress: '#f59e0b',
-  completed: '#22c55e',
-  cancelled: '#94a3b8',
-};
-
-function statusLabel(s: Job['status']) {
-  return s.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function InfoRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
-  return (
-    <View style={[styles.infoRow, !last && styles.infoRowBorder]}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
-    </View>
-  );
-}
+type TabId = 'diag' | 'tools' | 'nav';
 
 export function JobDetailScreen({ route, navigation }: Props) {
   const { jobId } = route.params;
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<TabId>('diag');
 
   useEffect(() => {
     let cancelled = false;
     fetchJobById(jobId).then((data) => {
-      if (!cancelled) {
-        setJob(data ?? null);
-      }
+      if (!cancelled) setJob(data ?? null);
       setLoading(false);
     });
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [jobId]);
 
   if (loading || !job) {
@@ -59,46 +38,120 @@ export function JobDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const color = statusColors[job.status];
-  const rows: { label: string; value: string }[] = [
-    { label: 'Customer', value: job.customer },
-    { label: 'Address', value: job.address },
-    {
-      label: 'Scheduled',
-      value: new Date(job.scheduledAt).toLocaleString(undefined, {
-        dateStyle: 'full',
-        timeStyle: 'short',
-      }),
-    },
-    ...(job.description ? [{ label: 'Description', value: job.description }] : []),
-  ];
+  const diagnosis = getDiagnosisForJob(jobId);
+  const isHigh = job.severity === 'high';
 
   return (
     <View style={styles.container}>
-      <Header title={job.title} onBack={() => navigation.goBack()} />
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <View style={styles.statusBar}>
+        <Text style={styles.statusBarText}>10:08</Text>
+        <Text style={styles.statusBarText}>⚡71%</Text>
+      </View>
 
-        <View style={[styles.statusBanner, { backgroundColor: color + '14', borderColor: color + '40' }]}>
-          <View style={[styles.statusDot, { backgroundColor: color }]} />
-          <Text style={[styles.statusText, { color }]}>{statusLabel(job.status)}</Text>
+      <View style={styles.jdHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Text style={styles.backBtnText}>‹</Text>
+        </TouchableOpacity>
+        <View style={styles.jdHeaderCenter}>
+          <Text style={styles.jdAddress} numberOfLines={1}>{job.address} · {job.customer}</Text>
+          <Text style={styles.jdSub} numberOfLines={1}>{job.description || job.title}</Text>
         </View>
+        <View style={[styles.badgeHigh, isHigh && { backgroundColor: 'rgba(255,71,87,.15)' }]}>
+          <Text style={[styles.badgeHighText, isHigh && { color: colors.red }]}>
+            {isHigh ? '🔴 HIGH' : '🟡 MED'}
+          </Text>
+        </View>
+      </View>
 
-        <Card>
-          {rows.map((row, i) => (
-            <InfoRow key={row.label} label={row.label} value={row.value} last={i === rows.length - 1} />
-          ))}
-        </Card>
+      <View style={styles.tabs}>
+        {(['diag', 'tools', 'nav'] as const).map((t) => (
+          <TouchableOpacity
+            key={t}
+            style={[styles.tab, tab === t && styles.tabOn]}
+            onPress={() => setTab(t)}
+          >
+            <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
+              {t === 'diag' ? 'AI Diagnosis' : t === 'tools' ? 'Tools' : 'Navigate'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {job.modelUrl ? (
-          <Button
-            title="Open 3D Model"
-            onPress={() => navigation.navigate('Viewer3D', { jobId: job.id, modelUrl: job.modelUrl! })}
-            style={styles.button}
-          />
-        ) : (
-          <Card style={styles.noModelCard}>
-            <Text style={styles.noModelText}>No 3D model linked to this job.</Text>
-          </Card>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {tab === 'diag' && (
+          <>
+            <Text style={styles.complaintLabel}>
+              Complaint: <Text style={styles.complaintQuote}>"{job.description || job.title}"</Text>
+            </Text>
+            {diagnosis.map((d, i) => (
+              <View key={i} style={styles.diagCard}>
+                <View style={styles.diagHdr}>
+                  <Text style={styles.diagIssue}>{d.issue}</Text>
+                  <Text style={styles.confLabel}>{d.confidence}%</Text>
+                </View>
+                <View style={styles.confBar}>
+                  <View style={[styles.confFill, { width: `${d.confidence}%` }]} />
+                </View>
+                {d.parts && d.parts.length > 0 && (
+                  <View style={styles.partsBox}>
+                    <Text style={styles.partsBoxTitle}>PARTS NEEDED</Text>
+                    <View style={styles.partsTags}>
+                      {d.parts.map((p, j) => (
+                        <View key={j} style={styles.ptag}>
+                          <Text style={styles.ptagText}>{p}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+              </View>
+            ))}
+            {job.modelUrl && (
+              <Button
+                title="🔍 View 3D Model →"
+                variant="orange"
+                onPress={() => navigation.navigate('Viewer3D', { jobId: job.id, modelUrl: job.modelUrl! })}
+                style={styles.view3dBtn}
+              />
+            )}
+          </>
+        )}
+
+        {tab === 'tools' && (
+          <>
+            <Text style={styles.complaintLabel}>Tools to bring for this job:</Text>
+            <View style={styles.toolChips}>
+              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔧 Socket Set</Text></View>
+              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔩 Torx T20</Text></View>
+              <View style={styles.toolChip}><Text style={styles.toolChipText}>🪛 Flathead</Text></View>
+              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔦 Flashlight</Text></View>
+              <View style={styles.toolChip}><Text style={styles.toolChipText}>🧤 Gloves</Text></View>
+            </View>
+            <View style={styles.partsBox}>
+              <Text style={styles.partsBoxTitle}>PARTS TO BRING</Text>
+              <View style={styles.partsTags}>
+                <View style={styles.ptag}><Text style={styles.ptagText}>DC97-16151A Bearing</Text></View>
+                <View style={styles.ptag}><Text style={styles.ptagText}>DC64-00802A Seal</Text></View>
+                <View style={styles.ptag}><Text style={styles.ptagText}>Grease Kit</Text></View>
+              </View>
+            </View>
+            <View style={styles.vanConfirm}>
+              <Text style={styles.vanConfirmText}>✅ All parts confirmed in van inventory</Text>
+            </View>
+          </>
+        )}
+
+        {tab === 'nav' && (
+          <>
+            <View style={styles.mapPlaceholder}>
+              <Text style={styles.mapPlaceholderText}>📍 Map View · {job.address}</Text>
+            </View>
+            <View style={styles.navInfo}>
+              <Text style={styles.navAddress}>{job.address}</Text>
+              <Text style={styles.navMeta}>3.2 miles · Est. 8 min drive</Text>
+            </View>
+            <Button title="🗺️ Open in Maps" onPress={() => {}} style={styles.navBtn} />
+          </>
         )}
       </ScrollView>
     </View>
@@ -106,42 +159,126 @@ export function JobDetailScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f1f5f9' },
-  scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 40, gap: 12 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  loadingText: { fontSize: 16, color: '#64748b' },
-
-  statusBanner: {
+  container: { flex: 1, backgroundColor: colors.panel },
+  statusBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    backgroundColor: colors.deep,
+  },
+  statusBarText: { fontSize: 11, color: colors.muted },
+  jdHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 12,
+    backgroundColor: colors.deep,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    backgroundColor: colors.soft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backBtnText: { fontSize: 18, color: colors.muted, fontWeight: '600' },
+  jdHeaderCenter: { flex: 1, minWidth: 0 },
+  jdAddress: { fontSize: 13, fontWeight: '600', color: colors.text },
+  jdSub: { fontSize: 11, color: colors.muted, marginTop: 2 },
+  badgeHigh: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  badgeHighText: { fontSize: 10, fontWeight: '600' },
+  tabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.soft,
     borderRadius: 10,
+    margin: 10,
+    marginBottom: 0,
+    padding: 3,
+  },
+  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
+  tabOn: { backgroundColor: colors.orange },
+  tabText: { fontSize: 11, color: colors.muted, fontWeight: '500' },
+  tabTextOn: { color: '#fff', fontWeight: '700' },
+  scroll: { flex: 1 },
+  content: { padding: 12, paddingBottom: 40 },
+  complaintLabel: { fontSize: 11, color: colors.muted, marginBottom: 10 },
+  complaintQuote: { fontStyle: 'italic', color: colors.text },
+  diagCard: {
+    backgroundColor: colors.soft,
     borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 11,
+    marginBottom: 9,
   },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  statusText: { fontSize: 14, fontWeight: '700' },
-
-  infoRow: {
-    paddingVertical: 13,
+  diagHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  diagIssue: { fontSize: 13, fontWeight: '600', color: colors.text },
+  confLabel: { fontSize: 11, color: colors.accent },
+  confBar: { height: 4, backgroundColor: colors.border, borderRadius: 2, overflow: 'hidden', marginBottom: 4 },
+  confFill: { height: '100%', borderRadius: 2, backgroundColor: colors.accent },
+  partsBox: {
+    backgroundColor: 'rgba(255,107,53,.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,.2)',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 8,
   },
-  infoRowBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
+  partsBoxTitle: { fontSize: 11, color: colors.orange, marginBottom: 6 },
+  partsTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  ptag: {
+    backgroundColor: 'rgba(255,107,53,.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,107,53,.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
-  label: {
-    fontSize: 11,
-    color: '#94a3b8',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 4,
+  ptagText: { fontSize: 11, color: colors.orange },
+  view3dBtn: { marginTop: 8 },
+  toolChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
+  toolChip: {
+    backgroundColor: colors.soft,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
   },
-  value: { fontSize: 15, color: '#0f172a', lineHeight: 22 },
-
-  button: { marginTop: 4 },
-  noModelCard: { alignItems: 'center', paddingVertical: 20 },
-  noModelText: { color: '#94a3b8', fontSize: 14 },
+  toolChipText: { fontSize: 11, color: colors.text },
+  vanConfirm: {
+    backgroundColor: 'rgba(0,212,255,.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(0,212,255,.15)',
+    borderRadius: 9,
+    padding: 10,
+    marginTop: 10,
+  },
+  vanConfirmText: { fontSize: 11, color: colors.muted },
+  mapPlaceholder: {
+    height: 110,
+    backgroundColor: colors.soft,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  mapPlaceholderText: { fontSize: 12, color: colors.muted },
+  navInfo: { marginBottom: 12 },
+  navAddress: { fontSize: 12, fontWeight: '600', color: colors.text, marginBottom: 4 },
+  navMeta: { fontSize: 11, color: colors.muted },
+  navBtn: { marginTop: 4 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
+  loadingText: { fontSize: 15, color: colors.muted },
 });

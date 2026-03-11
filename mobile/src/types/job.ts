@@ -7,4 +7,12 @@ export interface Job {
   scheduledAt: string;
   modelUrl?: string;
   description?: string;
+  /** For dashboard display: high / med / low */
+  severity?: 'high' | 'med' | 'low';
+}
+
+export interface DiagnosisItem {
+  issue: string;
+  confidence: number;
+  parts?: string[];
 }

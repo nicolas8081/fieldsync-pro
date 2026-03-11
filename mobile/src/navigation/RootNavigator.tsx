@@ -15,7 +15,7 @@ export function RootNavigator() {
         initialRouteName="JobList"
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#f1f5f9' },
+          contentStyle: { backgroundColor: '#111827' },
         }}
       >
         <Stack.Screen name="JobList" component={JobListScreen} />

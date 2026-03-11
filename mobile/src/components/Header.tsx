@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { colors } from '../theme';
 
 interface HeaderProps {
   title: string;
@@ -36,26 +37,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: '#fff',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e8f0',
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: colors.deep,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   left: { minWidth: 70 },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  chevron: { fontSize: 26, color: '#2563eb', lineHeight: 30, marginTop: -1 },
-  backText: { fontSize: 16, color: '#2563eb', fontWeight: '500' },
+  chevron: { fontSize: 24, color: colors.muted, lineHeight: 28 },
+  backText: { fontSize: 14, color: colors.muted, fontWeight: '500' },
   title: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#0f172a',
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: -0.3,
   },
