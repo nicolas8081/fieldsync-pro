@@ -9,26 +9,20 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Card } from '../components/Card';
-import { Header } from '../components/Header';
 import { fetchJobs } from '../api/jobs';
 import { Job } from '../types/job';
 import { RootStackParamList } from '../navigation/types';
+import { colors } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'JobList'>;
 };
 
-const statusColors: Record<Job['status'], string> = {
-  scheduled: '#3b82f6',
-  in_progress: '#f59e0b',
-  completed: '#22c55e',
-  cancelled: '#94a3b8',
+const severityBadge: Record<string, { bg: string; color: string; label: string }> = {
+  high: { bg: 'rgba(255,71,87,.15)', color: colors.red, label: '🔴 HIGH' },
+  med: { bg: 'rgba(255,214,10,.15)', color: colors.yellow, label: '🟡 MED' },
+  low: { bg: 'rgba(0,230,118,.15)', color: colors.green, label: '🟢 LOW' },
 };
-
-function statusLabel(s: Job['status']) {
-  return s.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 export function JobListScreen({ navigation }: Props) {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -51,47 +45,75 @@ export function JobListScreen({ navigation }: Props) {
     load();
   }, []);
 
+  const doneCount = jobs.filter((j) => j.status === 'completed').length;
+  const leftCount = jobs.filter((j) => j.status !== 'completed').length;
+
   const renderItem = ({ item }: { item: Job }) => {
-    const color = statusColors[item.status];
+    const severity = item.severity || (item.status === 'in_progress' ? 'high' : 'med');
+    const badge = severityBadge[severity] || severityBadge.med;
+    const isUrg = severity === 'high';
+    const isNew = item.status === 'scheduled';
+
     return (
       <TouchableOpacity
-        activeOpacity={0.75}
+        activeOpacity={0.8}
         onPress={() => navigation.navigate('JobDetail', { jobId: item.id })}
+        style={[
+          styles.jobCard,
+          isUrg && styles.jobCardUrg,
+          isNew && !isUrg && styles.jobCardNew,
+        ]}
       >
-        <Card style={styles.card} accentColor={color}>
-          <View style={styles.topRow}>
-            <Text style={styles.title} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <Text style={styles.chevron}>›</Text>
+        <View style={styles.jctop}>
+          <Text style={styles.jcaddr} numberOfLines={1}>{item.address}</Text>
+          <View style={[styles.jcbadge, { backgroundColor: badge.bg }]}>
+            <Text style={[styles.jcbadgeText, { color: badge.color }]}>{badge.label}</Text>
           </View>
-          <View style={[styles.badge, { backgroundColor: color + '18' }]}>
-            <View style={[styles.dot, { backgroundColor: color }]} />
-            <Text style={[styles.badgeText, { color }]}>{statusLabel(item.status)}</Text>
-          </View>
-          <View style={styles.divider} />
-          <Text style={styles.customer}>{item.customer}</Text>
-          <Text style={styles.address} numberOfLines={1}>{item.address}</Text>
-          <Text style={styles.date}>
-            {new Date(item.scheduledAt).toLocaleDateString(undefined, {
-              weekday: 'short',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+        </View>
+        <Text style={styles.jccomplaint} numberOfLines={2}>
+          {item.description || item.title}
+        </Text>
+        <View style={styles.jcmeta}>
+          <Text style={styles.jcmetaText}>📍 3.2 mi</Text>
+          <Text style={styles.jcmetaText}>
+            ⏰ {new Date(item.scheduledAt).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
           </Text>
-        </Card>
+          <Text style={styles.jcmetaText}>🧰 Parts loaded</Text>
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
-      <Header title="Jobs" />
+      <View style={styles.statusBar}>
+        <Text style={styles.statusBarText}>9:41</Text>
+        <Text style={styles.statusBarText}>⚡87%</Text>
+      </View>
+
+      <View style={styles.techHeader}>
+        <Text style={styles.techGreet}>Good morning,</Text>
+        <Text style={styles.techname}>Marcus Thompson 🛠️</Text>
+      </View>
+
+      <View style={styles.statsRow}>
+        <View style={styles.statPill}>
+          <Text style={styles.statNum}>{jobs.length}</Text>
+          <Text style={styles.statLabel}>Today</Text>
+        </View>
+        <View style={styles.statPill}>
+          <Text style={[styles.statNum, { color: colors.green }]}>{doneCount}</Text>
+          <Text style={styles.statLabel}>Done</Text>
+        </View>
+        <View style={styles.statPill}>
+          <Text style={[styles.statNum, { color: colors.yellow }]}>{leftCount}</Text>
+          <Text style={styles.statLabel}>Left</Text>
+        </View>
+      </View>
+
       {loading && jobs.length === 0 ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#2563eb" />
+          <ActivityIndicator size="large" color={colors.accent} />
           <Text style={styles.loadingText}>Loading jobs…</Text>
         </View>
       ) : (
@@ -100,17 +122,19 @@ export function JobListScreen({ navigation }: Props) {
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <Text style={styles.sectionLabel}>ASSIGNED JOBS</Text>
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => load(true)}
-              tintColor="#2563eb"
+              tintColor={colors.accent}
             />
           }
           ListEmptyComponent={
             <View style={styles.centered}>
-              <Text style={styles.emptyText}>No jobs found</Text>
-              <Text style={styles.emptySubtext}>Pull down to refresh</Text>
+              <Text style={styles.emptyText}>No jobs assigned</Text>
             </View>
           }
         />
@@ -120,35 +144,68 @@ export function JobListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f1f5f9' },
-  list: { padding: 16, paddingBottom: 32 },
-  card: { marginBottom: 12 },
-  topRow: {
+  container: { flex: 1, backgroundColor: colors.panel },
+  statusBar: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    backgroundColor: colors.deep,
+  },
+  statusBarText: { fontSize: 11, color: colors.muted, fontFamily: 'monospace' },
+  techHeader: {
+    backgroundColor: colors.deep,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  techGreet: { fontSize: 11, color: colors.muted, marginBottom: 2 },
+  techname: { fontSize: 16, fontWeight: '700', color: colors.text },
+  statsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  statPill: {
+    flex: 1,
+    backgroundColor: colors.soft,
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+  },
+  statNum: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 2 },
+  statLabel: { fontSize: 10, color: colors.muted },
+  sectionLabel: {
+    fontSize: 11,
+    color: colors.muted,
+    letterSpacing: 1.2,
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  list: { padding: 12, paddingBottom: 32 },
+  jobCard: {
+    backgroundColor: colors.soft,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    padding: 10,
     marginBottom: 8,
   },
-  title: { fontSize: 16, fontWeight: '700', color: '#0f172a', flex: 1, marginRight: 4 },
-  chevron: { fontSize: 22, color: '#cbd5e1', marginTop: 1 },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginBottom: 10,
-  },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  badgeText: { fontSize: 12, fontWeight: '600' },
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: '#f1f5f9', marginBottom: 10 },
-  customer: { fontSize: 14, fontWeight: '600', color: '#334155', marginBottom: 3 },
-  address: { fontSize: 13, color: '#64748b', marginBottom: 4 },
-  date: { fontSize: 12, color: '#94a3b8' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 6 },
-  loadingText: { fontSize: 15, color: '#64748b', marginTop: 12 },
-  emptyText: { fontSize: 17, fontWeight: '600', color: '#475569' },
-  emptySubtext: { fontSize: 14, color: '#94a3b8' },
+  jobCardUrg: { borderLeftWidth: 3, borderLeftColor: colors.red },
+  jobCardNew: { borderLeftWidth: 3, borderLeftColor: colors.accent },
+  jctop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
+  jcaddr: { fontSize: 12, fontWeight: '600', color: colors.text, flex: 1, marginRight: 8 },
+  jcbadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 20 },
+  jcbadgeText: { fontSize: 10, fontWeight: '600', fontFamily: 'monospace' },
+  jccomplaint: { fontSize: 11, color: colors.muted, marginBottom: 6 },
+  jcmeta: { flexDirection: 'row', gap: 10 },
+  jcmetaText: { fontSize: 10, color: colors.muted, fontFamily: 'monospace' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 10 },
+  loadingText: { fontSize: 14, color: colors.muted },
+  emptyText: { fontSize: 15, color: colors.muted },
 });

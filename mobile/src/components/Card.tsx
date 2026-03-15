@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
+import { colors } from '../theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -21,13 +22,10 @@ export function Card({ children, style, accentColor }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 14,
-    shadowColor: '#0f172a',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 10,
-    elevation: 3,
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     overflow: 'hidden',
   },
   cardRow: {
@@ -41,6 +39,6 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    padding: 16,
+    padding: 14,
   },
 });
