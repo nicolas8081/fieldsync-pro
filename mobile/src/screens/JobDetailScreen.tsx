@@ -88,9 +88,10 @@ export function JobDetailScreen({ route, navigation }: Props) {
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {tab === 'diag' && (
           <>
-            <Text style={styles.complaintLabel}>
-              Complaint: <Text style={styles.complaintQuote}>"{job.description || job.title}"</Text>
-            </Text>
+            <View style={styles.complaintCard}>
+              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+            </View>
             {diagnosis.map((d, i) => (
               <View key={i} style={styles.diagCard}>
                 <View style={styles.diagHdr}>
@@ -127,6 +128,10 @@ export function JobDetailScreen({ route, navigation }: Props) {
 
         {tab === 'tools' && (
           <>
+            <View style={styles.complaintCard}>
+              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+            </View>
             <Text style={styles.complaintLabel}>Tools to bring for this job:</Text>
             <View style={styles.toolChips}>
               <View style={styles.toolChip}><Text style={styles.toolChipText}>🔧 Socket Set</Text></View>
@@ -151,6 +156,10 @@ export function JobDetailScreen({ route, navigation }: Props) {
 
         {tab === 'nav' && (
           <>
+            <View style={styles.complaintCard}>
+              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+            </View>
             <View style={styles.mapPlaceholder}>
               <Text style={styles.mapPlaceholderText}>📍 Map View · {job.address}</Text>
             </View>
@@ -223,8 +232,28 @@ function createStyles(colors: ThemeColors) {
     tabTextOn: { color: '#FFFFFF', fontWeight: '700' },
     scroll: { flex: 1 },
     content: { padding: 21, paddingBottom: 52 },
+    complaintCard: {
+      backgroundColor: colors.accentLight,
+      borderWidth: 2,
+      borderColor: colors.accentBorder,
+      borderRadius: 16,
+      padding: 18,
+      marginBottom: 21,
+    },
+    complaintCardLabel: {
+      fontSize: 12,
+      color: colors.accent,
+      fontWeight: '700',
+      letterSpacing: 1.2,
+      marginBottom: 10,
+    },
+    complaintCardText: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      lineHeight: 28,
+    },
     complaintLabel: { fontSize: 16, color: colors.textSecondary, marginBottom: 13 },
-    complaintQuote: { fontStyle: 'italic', color: colors.text },
     diagCard: {
       backgroundColor: colors.card,
       borderWidth: 1,
