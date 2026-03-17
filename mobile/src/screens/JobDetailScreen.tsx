@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { fetchJobById, getDiagnosisForJob } from '../api/jobs';
 import { Job } from '../types/job';
 import { RootStackParamList } from '../navigation/types';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeColors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'JobDetail'>;
 
@@ -14,9 +16,12 @@ type TabId = 'diag' | 'tools' | 'nav';
 
 export function JobDetailScreen({ route, navigation }: Props) {
   const { jobId } = route.params;
+  const { colors } = useTheme();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabId>('diag');
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +35,7 @@ export function JobDetailScreen({ route, navigation }: Props) {
   if (loading || !job) {
     return (
       <View style={styles.container}>
-        <Header title="Job" onBack={() => navigation.goBack()} />
+        <Header title="Job" onBack={() => navigation.goBack()} right={<ThemeToggle />} />
         <View style={styles.centered}>
           <Text style={styles.loadingText}>{loading ? 'Loading…' : 'Job not found'}</Text>
         </View>
@@ -45,7 +50,10 @@ export function JobDetailScreen({ route, navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.statusBar}>
         <Text style={styles.statusBarText}>10:08</Text>
-        <Text style={styles.statusBarText}>⚡71%</Text>
+        <View style={styles.statusBarRight}>
+          <ThemeToggle />
+          <Text style={styles.statusBarText}>⚡71%</Text>
+        </View>
       </View>
 
       <View style={styles.jdHeader}>
@@ -56,9 +64,9 @@ export function JobDetailScreen({ route, navigation }: Props) {
           <Text style={styles.jdAddress} numberOfLines={1}>{job.address} · {job.customer}</Text>
           <Text style={styles.jdSub} numberOfLines={1}>{job.description || job.title}</Text>
         </View>
-        <View style={[styles.badgeHigh, isHigh && { backgroundColor: 'rgba(255,71,87,.15)' }]}>
-          <Text style={[styles.badgeHighText, isHigh && { color: colors.red }]}>
-            {isHigh ? '🔴 HIGH' : '🟡 MED'}
+        <View style={[styles.badgeHigh, isHigh ? { backgroundColor: colors.redLight } : { backgroundColor: colors.yellowLight }]}>
+          <Text style={[styles.badgeHighText, isHigh ? { color: colors.red } : { color: colors.yellow }]}>
+            {isHigh ? 'HIGH' : 'MED'}
           </Text>
         </View>
       </View>
@@ -158,127 +166,138 @@ export function JobDetailScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.panel },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: colors.deep,
-  },
-  statusBarText: { fontSize: 11, color: colors.muted },
-  jdHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: colors.deep,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  backBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: colors.soft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  backBtnText: { fontSize: 18, color: colors.muted, fontWeight: '600' },
-  jdHeaderCenter: { flex: 1, minWidth: 0 },
-  jdAddress: { fontSize: 13, fontWeight: '600', color: colors.text },
-  jdSub: { fontSize: 11, color: colors.muted, marginTop: 2 },
-  badgeHigh: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  badgeHighText: { fontSize: 10, fontWeight: '600' },
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: colors.soft,
-    borderRadius: 10,
-    margin: 10,
-    marginBottom: 0,
-    padding: 3,
-  },
-  tab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-  tabOn: { backgroundColor: colors.orange },
-  tabText: { fontSize: 11, color: colors.muted, fontWeight: '500' },
-  tabTextOn: { color: '#fff', fontWeight: '700' },
-  scroll: { flex: 1 },
-  content: { padding: 12, paddingBottom: 40 },
-  complaintLabel: { fontSize: 11, color: colors.muted, marginBottom: 10 },
-  complaintQuote: { fontStyle: 'italic', color: colors.text },
-  diagCard: {
-    backgroundColor: colors.soft,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 11,
-    marginBottom: 9,
-  },
-  diagHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  diagIssue: { fontSize: 13, fontWeight: '600', color: colors.text },
-  confLabel: { fontSize: 11, color: colors.accent },
-  confBar: { height: 4, backgroundColor: colors.border, borderRadius: 2, overflow: 'hidden', marginBottom: 4 },
-  confFill: { height: '100%', borderRadius: 2, backgroundColor: colors.accent },
-  partsBox: {
-    backgroundColor: 'rgba(255,107,53,.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,107,53,.2)',
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 8,
-  },
-  partsBoxTitle: { fontSize: 11, color: colors.orange, marginBottom: 6 },
-  partsTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  ptag: {
-    backgroundColor: 'rgba(255,107,53,.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,107,53,.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  ptagText: { fontSize: 11, color: colors.orange },
-  view3dBtn: { marginTop: 8 },
-  toolChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
-  toolChip: {
-    backgroundColor: colors.soft,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  toolChipText: { fontSize: 11, color: colors.text },
-  vanConfirm: {
-    backgroundColor: 'rgba(0,212,255,.07)',
-    borderWidth: 1,
-    borderColor: 'rgba(0,212,255,.15)',
-    borderRadius: 9,
-    padding: 10,
-    marginTop: 10,
-  },
-  vanConfirmText: { fontSize: 11, color: colors.muted },
-  mapPlaceholder: {
-    height: 110,
-    backgroundColor: colors.soft,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  mapPlaceholderText: { fontSize: 12, color: colors.muted },
-  navInfo: { marginBottom: 12 },
-  navAddress: { fontSize: 12, fontWeight: '600', color: colors.text, marginBottom: 4 },
-  navMeta: { fontSize: 11, color: colors.muted },
-  navBtn: { marginTop: 4 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  loadingText: { fontSize: 15, color: colors.muted },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    statusBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 18,
+      paddingVertical: 13,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    statusBarRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    statusBarText: { fontSize: 16, color: colors.textSecondary },
+    jdHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 13,
+      paddingHorizontal: 21,
+      paddingVertical: 18,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    backBtn: {
+      width: 44,
+      height: 44,
+      borderRadius: 13,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    backBtnText: { fontSize: 26, color: colors.accent, fontWeight: '600' },
+    jdHeaderCenter: { flex: 1, minWidth: 0 },
+    jdAddress: { fontSize: 18, fontWeight: '600', color: colors.text },
+    jdSub: { fontSize: 16, color: colors.textSecondary, marginTop: 3 },
+    badgeHigh: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 26 },
+    badgeHighText: { fontSize: 14, fontWeight: '700' },
+    tabs: {
+      flexDirection: 'row',
+      backgroundColor: colors.surface,
+      borderRadius: 16,
+      margin: 21,
+      marginBottom: 0,
+      padding: 5,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    tab: { flex: 1, paddingVertical: 13, alignItems: 'center', borderRadius: 13 },
+    tabOn: { backgroundColor: colors.accent },
+    tabText: { fontSize: 16, color: colors.textSecondary, fontWeight: '500' },
+    tabTextOn: { color: '#FFFFFF', fontWeight: '700' },
+    scroll: { flex: 1 },
+    content: { padding: 21, paddingBottom: 52 },
+    complaintLabel: { fontSize: 16, color: colors.textSecondary, marginBottom: 13 },
+    complaintQuote: { fontStyle: 'italic', color: colors.text },
+    diagCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 13,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    diagHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+    diagIssue: { fontSize: 18, fontWeight: '600', color: colors.text },
+    confLabel: { fontSize: 16, color: colors.accent, fontWeight: '600' },
+    confBar: { height: 7, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: 5 },
+    confFill: { height: '100%', borderRadius: 4, backgroundColor: colors.accent },
+    partsBox: {
+      backgroundColor: colors.accentLight,
+      borderWidth: 1,
+      borderColor: colors.accentBorder,
+      borderRadius: 16,
+      padding: 16,
+      marginTop: 13,
+    },
+    partsBoxTitle: { fontSize: 14, color: colors.accent, fontWeight: '700', marginBottom: 10 },
+    partsTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    ptag: {
+      backgroundColor: colors.accentLight,
+      borderWidth: 1,
+      borderColor: colors.accentBorder,
+      paddingHorizontal: 13,
+      paddingVertical: 7,
+      borderRadius: 26,
+    },
+    ptagText: { fontSize: 16, color: colors.accent, fontWeight: '600' },
+    view3dBtn: { marginTop: 16 },
+    toolChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 18 },
+    toolChip: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 26,
+    },
+    toolChipText: { fontSize: 16, color: colors.text },
+    vanConfirm: {
+      backgroundColor: colors.accentLight,
+      borderWidth: 1,
+      borderColor: colors.accentBorder,
+      borderRadius: 16,
+      padding: 16,
+      marginTop: 16,
+    },
+    vanConfirmText: { fontSize: 16, color: colors.textSecondary },
+    mapPlaceholder: {
+      height: 156,
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 16,
+    },
+    mapPlaceholderText: { fontSize: 17, color: colors.textSecondary },
+    navInfo: { marginBottom: 16 },
+    navAddress: { fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 5 },
+    navMeta: { fontSize: 16, color: colors.textSecondary },
+    navBtn: { marginTop: 10 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 31 },
+    loadingText: { fontSize: 20, color: colors.textSecondary },
+  });
+}

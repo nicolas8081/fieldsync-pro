@@ -11,17 +11,18 @@ npm install
 
 ## Run
 
-- **iOS:** `npm run ios`
-- **Android:** `npm run android`
+- **Dev server (recommended for phone):** `npm start` — then scan the **QR code** with **Expo Go** (Android) or the **Camera app** (iOS) to open the app on your device. Ensure phone and computer are on the same Wi‑Fi.
+- **iOS simulator:** `npm run ios`
+- **Android emulator:** `npm run android`
 - **Web:** `npm run web`
-- **Dev server:** `npm start`
 
 ## Structure
 
 - **Screens:** Job list → Job detail → 3D viewer (with model quality feedback)
 - **Navigation:** React Navigation (native stack), no header (custom Header in each screen)
 - **API:** `src/api/jobs.ts` – fetches from `EXPO_PUBLIC_API_URL` or falls back to mock data
-- **UI:** `src/components/` – Button, Card, Header
+- **UI:** `src/components/` – Button, Card, Header, ThemeToggle
+- **Theme:** Tap **Night** / **Day** (in the top bar) to switch between dark (FieldSync prototype) and light (Claude-style) themes. Choice is saved and restored on next launch.
 
 ## Backend / mock data
 

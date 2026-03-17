@@ -1,17 +1,21 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/Button';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { RootStackParamList } from '../navigation/types';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeColors } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Viewer3D'>;
 
 export function Viewer3DScreen({ route, navigation }: Props) {
-  const { jobId, modelUrl } = route.params;
+  const { colors } = useTheme();
   const [qualityRating, setQualityRating] = useState<number | null>(null);
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const submitFeedback = () => {
     setSubmitted(true);
@@ -21,11 +25,13 @@ export function Viewer3DScreen({ route, navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.statusBar}>
         <Text style={styles.statusBarText}>10:12</Text>
-        <Text style={styles.statusBarText}>⚡70%</Text>
+        <View style={styles.statusBarRight}>
+          <ThemeToggle />
+          <Text style={styles.statusBarText}>⚡70%</Text>
+        </View>
       </View>
 
       <View style={styles.viewer}>
-        {/* Simple washer silhouette placeholder (prototype style) */}
         <View style={styles.washer}>
           <View style={styles.wbody}>
             <View style={styles.wdoor} />
@@ -43,7 +49,7 @@ export function Viewer3DScreen({ route, navigation }: Props) {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.partCard}>
-          <Text style={styles.partCardTitle}>🔴 FAULTY PART DETECTED</Text>
+          <Text style={styles.partCardTitle}>Faulty part detected</Text>
           <Text style={styles.partCardDesc}>
             Drum Bearing · #DC97-16151A{'\n'}
             Location: rear drum shaft, back panel access{'\n'}
@@ -116,133 +122,154 @@ export function Viewer3DScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.panel },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: colors.deep,
-  },
-  statusBarText: { fontSize: 11, color: colors.muted },
-  viewer: {
-    minHeight: 280,
-    backgroundColor: '#0b1829',
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 24,
-  },
-  washer: {
-    position: 'relative',
-    width: 120,
-    height: 140,
-  },
-  wbody: {
-    width: 108,
-    height: 118,
-    backgroundColor: '#1e2a3a',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#2a3a50',
-    position: 'absolute',
-    bottom: 0,
-    left: 6,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 24,
-  },
-  wdoor: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 3,
-    borderColor: '#2a4060',
-    backgroundColor: '#1a3050',
-  },
-  highlight: {
-    position: 'absolute',
-    top: 18,
-    right: 12,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255,71,87,.4)',
-    borderWidth: 2,
-    borderColor: colors.red,
-  },
-  hlabel: {
-    position: 'absolute',
-    top: 12,
-    right: 30,
-    backgroundColor: colors.red,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  hlabelText: { fontSize: 10, color: '#fff', fontWeight: '600' },
-  vcontrols: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  vctrl: {
-    backgroundColor: 'rgba(255,255,255,.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,.1)',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-  },
-  vctrlText: { fontSize: 10, color: colors.text },
-  scroll: { flex: 1 },
-  content: { padding: 12, paddingBottom: 40 },
-  partCard: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.red,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 14,
-  },
-  partCardTitle: { fontSize: 12, color: colors.red, fontWeight: '700', marginBottom: 6 },
-  partCardDesc: { fontSize: 11, color: colors.muted, lineHeight: 18 },
-  actionRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
-  actionBtn: { flex: 1 },
-  feedbackSection: {
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 14,
-    padding: 16,
-  },
-  sectionTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
-  sectionSub: { fontSize: 13, color: colors.muted, marginTop: 4, marginBottom: 14 },
-  label: { fontSize: 13, fontWeight: '500', color: colors.muted, marginBottom: 8 },
-  ratingRow: { flexDirection: 'row', marginBottom: 14 },
-  ratingBtn: { flex: 1, minHeight: 44, borderRadius: 10, backgroundColor: colors.soft, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  ratingBtnMargin: { marginRight: 8 },
-  ratingBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
-  ratingBtnText: { fontSize: 15, fontWeight: '700', color: colors.muted },
-  ratingBtnTextOn: { color: colors.navy },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    color: colors.text,
-    backgroundColor: colors.soft,
-    minHeight: 80,
-    textAlignVertical: 'top',
-    marginBottom: 14,
-  },
-  submitBtn: { marginBottom: 8 },
-  thanks: { fontSize: 13, color: colors.green, textAlign: 'center' },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    statusBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 18,
+      paddingVertical: 13,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    statusBarRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    statusBarText: { fontSize: 16, color: colors.textSecondary },
+    viewer: {
+      minHeight: 364,
+      backgroundColor: colors.borderStrong,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 31,
+    },
+    washer: { position: 'relative', width: 156, height: 182 },
+    wbody: {
+      width: 140,
+      height: 153,
+      backgroundColor: colors.muted,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: colors.borderStrong,
+      position: 'absolute',
+      bottom: 0,
+      left: 8,
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      paddingTop: 31,
+    },
+    wdoor: {
+      width: 73,
+      height: 73,
+      borderRadius: 36,
+      borderWidth: 2,
+      borderColor: colors.borderStrong,
+      backgroundColor: colors.navy,
+    },
+    highlight: {
+      position: 'absolute',
+      top: 23,
+      right: 16,
+      width: 21,
+      height: 21,
+      borderRadius: 10,
+      backgroundColor: colors.redLight,
+      borderWidth: 2,
+      borderColor: colors.red,
+    },
+    hlabel: {
+      position: 'absolute',
+      top: 16,
+      right: 39,
+      backgroundColor: colors.red,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 10,
+    },
+    hlabelText: { fontSize: 13, color: '#fff', fontWeight: '600' },
+    vcontrols: {
+      position: 'absolute',
+      bottom: 16,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 10,
+    },
+    vctrl: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 13,
+      paddingVertical: 10,
+      paddingHorizontal: 16,
+    },
+    vctrlText: { fontSize: 14, color: colors.text },
+    scroll: { flex: 1 },
+    content: { padding: 21, paddingBottom: 52 },
+    partCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.red,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 21,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    partCardTitle: { fontSize: 17, color: colors.red, fontWeight: '700', marginBottom: 10 },
+    partCardDesc: { fontSize: 16, color: colors.textSecondary, lineHeight: 26 },
+    actionRow: { flexDirection: 'row', gap: 13, marginBottom: 26 },
+    actionBtn: { flex: 1 },
+    feedbackSection: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 18,
+      padding: 23,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    sectionTitle: { fontSize: 21, fontWeight: '700', color: colors.text },
+    sectionSub: { fontSize: 17, color: colors.textSecondary, marginTop: 5, marginBottom: 18 },
+    label: { fontSize: 17, fontWeight: '600', color: colors.textSecondary, marginBottom: 10 },
+    ratingRow: { flexDirection: 'row', marginBottom: 18 },
+    ratingBtn: {
+      flex: 1,
+      minHeight: 60,
+      borderRadius: 16,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    ratingBtnMargin: { marginRight: 10 },
+    ratingBtnOn: { backgroundColor: colors.accent, borderColor: colors.accent },
+    ratingBtnText: { fontSize: 20, fontWeight: '700', color: colors.textSecondary },
+    ratingBtnTextOn: { color: '#FFFFFF' },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 16,
+      padding: 18,
+      fontSize: 18,
+      color: colors.text,
+      backgroundColor: colors.surface,
+      minHeight: 114,
+      textAlignVertical: 'top',
+      marginBottom: 18,
+    },
+    submitBtn: { marginBottom: 10 },
+    thanks: { fontSize: 17, color: colors.green, textAlign: 'center' },
+  });
+}

@@ -4,18 +4,20 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { JobListScreen } from '../screens/JobListScreen';
 import { JobDetailScreen } from '../screens/JobDetailScreen';
 import { Viewer3DScreen } from '../screens/Viewer3DScreen';
+import { useTheme } from '../context/ThemeContext';
 import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
+  const { colors } = useTheme();
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="JobList"
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: '#111827' },
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         <Stack.Screen name="JobList" component={JobListScreen} />

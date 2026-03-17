@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -12,22 +12,30 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { fetchJobs } from '../api/jobs';
 import { Job } from '../types/job';
 import { RootStackParamList } from '../navigation/types';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { ThemeColors } from '../theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'JobList'>;
 };
 
-const severityBadge: Record<string, { bg: string; color: string; label: string }> = {
-  high: { bg: 'rgba(255,71,87,.15)', color: colors.red, label: '🔴 HIGH' },
-  med: { bg: 'rgba(255,214,10,.15)', color: colors.yellow, label: '🟡 MED' },
-  low: { bg: 'rgba(0,230,118,.15)', color: colors.green, label: '🟢 LOW' },
-};
+function getSeverityBadge(colors: ThemeColors): Record<string, { bg: string; color: string; label: string }> {
+  return {
+    high: { bg: colors.redLight, color: colors.red, label: 'HIGH' },
+    med: { bg: colors.yellowLight, color: colors.yellow, label: 'MED' },
+    low: { bg: colors.greenLight, color: colors.green, label: 'LOW' },
+  };
+}
 
 export function JobListScreen({ navigation }: Props) {
+  const { colors } = useTheme();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const severityBadge = useMemo(() => getSeverityBadge(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const load = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -88,7 +96,10 @@ export function JobListScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.statusBar}>
         <Text style={styles.statusBarText}>9:41</Text>
-        <Text style={styles.statusBarText}>⚡87%</Text>
+        <View style={styles.statusBarRight}>
+          <ThemeToggle />
+          <Text style={styles.statusBarText}>⚡87%</Text>
+        </View>
       </View>
 
       <View style={styles.techHeader}>
@@ -143,69 +154,82 @@ export function JobListScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.panel },
-  statusBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    backgroundColor: colors.deep,
-  },
-  statusBarText: { fontSize: 11, color: colors.muted, fontFamily: 'monospace' },
-  techHeader: {
-    backgroundColor: colors.deep,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  techGreet: { fontSize: 11, color: colors.muted, marginBottom: 2 },
-  techname: { fontSize: 16, fontWeight: '700', color: colors.text },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  statPill: {
-    flex: 1,
-    backgroundColor: colors.soft,
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    alignItems: 'center',
-  },
-  statNum: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 2 },
-  statLabel: { fontSize: 10, color: colors.muted },
-  sectionLabel: {
-    fontSize: 11,
-    color: colors.muted,
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    paddingHorizontal: 2,
-  },
-  list: { padding: 12, paddingBottom: 32 },
-  jobCard: {
-    backgroundColor: colors.soft,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 8,
-  },
-  jobCardUrg: { borderLeftWidth: 3, borderLeftColor: colors.red },
-  jobCardNew: { borderLeftWidth: 3, borderLeftColor: colors.accent },
-  jctop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
-  jcaddr: { fontSize: 12, fontWeight: '600', color: colors.text, flex: 1, marginRight: 8 },
-  jcbadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 20 },
-  jcbadgeText: { fontSize: 10, fontWeight: '600', fontFamily: 'monospace' },
-  jccomplaint: { fontSize: 11, color: colors.muted, marginBottom: 6 },
-  jcmeta: { flexDirection: 'row', gap: 10 },
-  jcmetaText: { fontSize: 10, color: colors.muted, fontFamily: 'monospace' },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 10 },
-  loadingText: { fontSize: 14, color: colors.muted },
-  emptyText: { fontSize: 15, color: colors.muted },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background },
+    statusBar: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 18,
+      paddingVertical: 13,
+      backgroundColor: colors.surface,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    statusBarRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    statusBarText: { fontSize: 16, color: colors.textSecondary },
+    techHeader: {
+      backgroundColor: colors.surface,
+      paddingHorizontal: 21,
+      paddingVertical: 21,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    techGreet: { fontSize: 16, color: colors.textSecondary, marginBottom: 3 },
+    techname: { fontSize: 23, fontWeight: '700', color: colors.text },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 13,
+      paddingHorizontal: 21,
+      paddingVertical: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    statPill: {
+      flex: 1,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      paddingVertical: 16,
+      paddingHorizontal: 16,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    statNum: { fontSize: 26, fontWeight: '700', color: colors.text, marginBottom: 3 },
+    statLabel: { fontSize: 14, color: colors.textSecondary },
+    sectionLabel: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      letterSpacing: 1.2,
+      marginBottom: 16,
+      paddingHorizontal: 3,
+    },
+    list: { padding: 21, paddingBottom: 42 },
+    jobCard: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 18,
+      padding: 18,
+      marginBottom: 13,
+      shadowColor: colors.navy,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    jobCardUrg: { borderLeftWidth: 5, borderLeftColor: colors.red },
+    jobCardNew: { borderLeftWidth: 5, borderLeftColor: colors.accent },
+    jctop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+    jcaddr: { fontSize: 18, fontWeight: '600', color: colors.text, flex: 1, marginRight: 10 },
+    jcbadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 26 },
+    jcbadgeText: { fontSize: 14, fontWeight: '600' },
+    jccomplaint: { fontSize: 17, color: colors.textSecondary, marginBottom: 10 },
+    jcmeta: { flexDirection: 'row', gap: 16 },
+    jcmetaText: { fontSize: 14, color: colors.muted },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 31, gap: 13 },
+    loadingText: { fontSize: 20, color: colors.textSecondary },
+    emptyText: { fontSize: 20, color: colors.textSecondary },
+  });
+}
