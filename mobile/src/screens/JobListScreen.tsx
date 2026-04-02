@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { fetchJobs } from '../api/jobs';
 import { Job } from '../types/job';
@@ -93,91 +94,81 @@ export function JobListScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.statusBar}>
-        <Text style={styles.statusBarText}>9:41</Text>
-        <View style={styles.statusBarRight}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
+
+        <View style={styles.statusBar}>
+          <View>
+            <Text style={styles.techGreet}>Good morning,</Text>
+            <Text style={styles.techname}>Marcus Thompson 🛠️</Text>
+          </View>
           <ThemeToggle />
-          <Text style={styles.statusBarText}>⚡87%</Text>
         </View>
-      </View>
 
-      <View style={styles.techHeader}>
-        <Text style={styles.techGreet}>Good morning,</Text>
-        <Text style={styles.techname}>Marcus Thompson 🛠️</Text>
-      </View>
+        <View style={styles.statsRow}>
+          <View style={styles.statPill}>
+            <Text style={styles.statNum}>{jobs.length}</Text>
+            <Text style={styles.statLabel}>Today</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={[styles.statNum, { color: colors.green }]}>{doneCount}</Text>
+            <Text style={styles.statLabel}>Done</Text>
+          </View>
+          <View style={styles.statPill}>
+            <Text style={[styles.statNum, { color: colors.yellow }]}>{leftCount}</Text>
+            <Text style={styles.statLabel}>Left</Text>
+          </View>
+        </View>
 
-      <View style={styles.statsRow}>
-        <View style={styles.statPill}>
-          <Text style={styles.statNum}>{jobs.length}</Text>
-          <Text style={styles.statLabel}>Today</Text>
-        </View>
-        <View style={styles.statPill}>
-          <Text style={[styles.statNum, { color: colors.green }]}>{doneCount}</Text>
-          <Text style={styles.statLabel}>Done</Text>
-        </View>
-        <View style={styles.statPill}>
-          <Text style={[styles.statNum, { color: colors.yellow }]}>{leftCount}</Text>
-          <Text style={styles.statLabel}>Left</Text>
-        </View>
+        {loading && jobs.length === 0 ? (
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color={colors.accent} />
+            <Text style={styles.loadingText}>Loading jobs…</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={jobs}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+            ListHeaderComponent={
+              <Text style={styles.sectionLabel}>ASSIGNED JOBS</Text>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={() => load(true)}
+                tintColor={colors.accent}
+              />
+            }
+            ListEmptyComponent={
+              <View style={styles.centered}>
+                <Text style={styles.emptyText}>No jobs assigned</Text>
+              </View>
+            }
+          />
+        )}
       </View>
-
-      {loading && jobs.length === 0 ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={styles.loadingText}>Loading jobs…</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={jobs}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          ListHeaderComponent={
-            <Text style={styles.sectionLabel}>ASSIGNED JOBS</Text>
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => load(true)}
-              tintColor={colors.accent}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.centered}>
-              <Text style={styles.emptyText}>No jobs assigned</Text>
-            </View>
-          }
-        />
-      )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.surface },
     container: { flex: 1, backgroundColor: colors.background },
     statusBar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingHorizontal: 18,
-      paddingVertical: 13,
-      backgroundColor: colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    statusBarRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-    statusBarText: { fontSize: 16, color: colors.textSecondary },
-    techHeader: {
-      backgroundColor: colors.surface,
       paddingHorizontal: 21,
-      paddingVertical: 21,
+      paddingVertical: 18,
+      backgroundColor: colors.surface,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    techGreet: { fontSize: 16, color: colors.textSecondary, marginBottom: 3 },
-    techname: { fontSize: 23, fontWeight: '700', color: colors.text },
+    techGreet: { fontSize: 16, color: colors.textSecondary, marginBottom: 2 },
+    techname: { fontSize: 21, fontWeight: '700', color: colors.text },
     statsRow: {
       flexDirection: 'row',
       gap: 13,

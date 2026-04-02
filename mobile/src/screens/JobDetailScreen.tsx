@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
@@ -34,12 +35,14 @@ export function JobDetailScreen({ route, navigation }: Props) {
 
   if (loading || !job) {
     return (
-      <View style={styles.container}>
-        <Header title="Job" onBack={() => navigation.goBack()} right={<ThemeToggle />} />
-        <View style={styles.centered}>
-          <Text style={styles.loadingText}>{loading ? 'Loading…' : 'Job not found'}</Text>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <View style={styles.container}>
+          <Header title="Job" onBack={() => navigation.goBack()} right={<ThemeToggle />} />
+          <View style={styles.centered}>
+            <Text style={styles.loadingText}>{loading ? 'Loading…' : 'Job not found'}</Text>
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -47,149 +50,136 @@ export function JobDetailScreen({ route, navigation }: Props) {
   const isHigh = job.severity === 'high';
 
   return (
-    <View style={styles.container}>
-      <View style={styles.statusBar}>
-        <Text style={styles.statusBarText}>10:08</Text>
-        <View style={styles.statusBarRight}>
-          <ThemeToggle />
-          <Text style={styles.statusBarText}>⚡71%</Text>
-        </View>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.container}>
 
-      <View style={styles.jdHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>‹</Text>
-        </TouchableOpacity>
-        <View style={styles.jdHeaderCenter}>
-          <Text style={styles.jdAddress} numberOfLines={1}>{job.address} · {job.customer}</Text>
-          <Text style={styles.jdSub} numberOfLines={1}>{job.description || job.title}</Text>
-        </View>
-        <View style={[styles.badgeHigh, isHigh ? { backgroundColor: colors.redLight } : { backgroundColor: colors.yellowLight }]}>
-          <Text style={[styles.badgeHighText, isHigh ? { color: colors.red } : { color: colors.yellow }]}>
-            {isHigh ? 'HIGH' : 'MED'}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.tabs}>
-        {(['diag', 'tools', 'nav'] as const).map((t) => (
-          <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && styles.tabOn]}
-            onPress={() => setTab(t)}
-          >
-            <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
-              {t === 'diag' ? 'AI Diagnosis' : t === 'tools' ? 'Tools' : 'Navigate'}
-            </Text>
+        <View style={styles.jdHeader}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <Text style={styles.backBtnText}>‹</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {tab === 'diag' && (
-          <>
-            <View style={styles.complaintCard}>
-              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
-              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+          <View style={styles.jdHeaderCenter}>
+            <Text style={styles.jdAddress} numberOfLines={1}>{job.address} · {job.customer}</Text>
+            <Text style={styles.jdSub} numberOfLines={1}>{job.description || job.title}</Text>
+          </View>
+          <View style={styles.jdHeaderRight}>
+            <View style={[styles.badgeHigh, isHigh ? { backgroundColor: colors.redLight } : { backgroundColor: colors.yellowLight }]}>
+              <Text style={[styles.badgeHighText, isHigh ? { color: colors.red } : { color: colors.yellow }]}>
+                {isHigh ? 'HIGH' : 'MED'}
+              </Text>
             </View>
-            {diagnosis.map((d, i) => (
-              <View key={i} style={styles.diagCard}>
-                <View style={styles.diagHdr}>
-                  <Text style={styles.diagIssue}>{d.issue}</Text>
-                  <Text style={styles.confLabel}>{d.confidence}%</Text>
-                </View>
-                <View style={styles.confBar}>
-                  <View style={[styles.confFill, { width: `${d.confidence}%` }]} />
-                </View>
-                {d.parts && d.parts.length > 0 && (
-                  <View style={styles.partsBox}>
-                    <Text style={styles.partsBoxTitle}>PARTS NEEDED</Text>
-                    <View style={styles.partsTags}>
-                      {d.parts.map((p, j) => (
-                        <View key={j} style={styles.ptag}>
-                          <Text style={styles.ptagText}>{p}</Text>
-                        </View>
-                      ))}
-                    </View>
+            <ThemeToggle />
+          </View>
+        </View>
+
+        <View style={styles.tabs}>
+          {(['diag', 'tools', 'nav'] as const).map((t) => (
+            <TouchableOpacity
+              key={t}
+              style={[styles.tab, tab === t && styles.tabOn]}
+              onPress={() => setTab(t)}
+            >
+              <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
+                {t === 'diag' ? 'AI Diagnosis' : t === 'tools' ? 'Tools' : 'Navigate'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {tab === 'diag' && (
+            <>
+              <View style={styles.complaintCard}>
+                <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+                <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+              </View>
+              {diagnosis.map((d, i) => (
+                <View key={i} style={styles.diagCard}>
+                  <View style={styles.diagHdr}>
+                    <Text style={styles.diagIssue}>{d.issue}</Text>
+                    <Text style={styles.confLabel}>{d.confidence}%</Text>
                   </View>
-                )}
-              </View>
-            ))}
-            {job.modelUrl && (
-              <Button
-                title="🔍 View 3D Model →"
-                variant="orange"
-                onPress={() => navigation.navigate('Viewer3D', { jobId: job.id, modelUrl: job.modelUrl! })}
-                style={styles.view3dBtn}
-              />
-            )}
-          </>
-        )}
+                  <View style={styles.confBar}>
+                    <View style={[styles.confFill, { width: `${d.confidence}%` }]} />
+                  </View>
+                  {d.parts && d.parts.length > 0 && (
+                    <View style={styles.partsBox}>
+                      <Text style={styles.partsBoxTitle}>PARTS NEEDED</Text>
+                      <View style={styles.partsTags}>
+                        {d.parts.map((p, j) => (
+                          <View key={j} style={styles.ptag}>
+                            <Text style={styles.ptagText}>{p}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
+              ))}
+              {job.modelUrl && (
+                <Button
+                  title="🔍 View 3D Model →"
+                  variant="orange"
+                  onPress={() => navigation.navigate('Viewer3D', { jobId: job.id, modelUrl: job.modelUrl! })}
+                  style={styles.view3dBtn}
+                />
+              )}
+            </>
+          )}
 
-        {tab === 'tools' && (
-          <>
-            <View style={styles.complaintCard}>
-              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
-              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
-            </View>
-            <Text style={styles.complaintLabel}>Tools to bring for this job:</Text>
-            <View style={styles.toolChips}>
-              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔧 Socket Set</Text></View>
-              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔩 Torx T20</Text></View>
-              <View style={styles.toolChip}><Text style={styles.toolChipText}>🪛 Flathead</Text></View>
-              <View style={styles.toolChip}><Text style={styles.toolChipText}>🔦 Flashlight</Text></View>
-              <View style={styles.toolChip}><Text style={styles.toolChipText}>🧤 Gloves</Text></View>
-            </View>
-            <View style={styles.partsBox}>
-              <Text style={styles.partsBoxTitle}>PARTS TO BRING</Text>
-              <View style={styles.partsTags}>
-                <View style={styles.ptag}><Text style={styles.ptagText}>DC97-16151A Bearing</Text></View>
-                <View style={styles.ptag}><Text style={styles.ptagText}>DC64-00802A Seal</Text></View>
-                <View style={styles.ptag}><Text style={styles.ptagText}>Grease Kit</Text></View>
+          {tab === 'tools' && (
+            <>
+              <View style={styles.complaintCard}>
+                <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+                <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
               </View>
-            </View>
-            <View style={styles.vanConfirm}>
-              <Text style={styles.vanConfirmText}>✅ All parts confirmed in van inventory</Text>
-            </View>
-          </>
-        )}
+              <Text style={styles.complaintLabel}>Tools to bring for this job:</Text>
+              <View style={styles.toolChips}>
+                <View style={styles.toolChip}><Text style={styles.toolChipText}>🔧 Socket Set</Text></View>
+                <View style={styles.toolChip}><Text style={styles.toolChipText}>🔩 Torx T20</Text></View>
+                <View style={styles.toolChip}><Text style={styles.toolChipText}>🪛 Flathead</Text></View>
+                <View style={styles.toolChip}><Text style={styles.toolChipText}>🔦 Flashlight</Text></View>
+                <View style={styles.toolChip}><Text style={styles.toolChipText}>🧤 Gloves</Text></View>
+              </View>
+              <View style={styles.partsBox}>
+                <Text style={styles.partsBoxTitle}>PARTS TO BRING</Text>
+                <View style={styles.partsTags}>
+                  <View style={styles.ptag}><Text style={styles.ptagText}>DC97-16151A Bearing</Text></View>
+                  <View style={styles.ptag}><Text style={styles.ptagText}>DC64-00802A Seal</Text></View>
+                  <View style={styles.ptag}><Text style={styles.ptagText}>Grease Kit</Text></View>
+                </View>
+              </View>
+              <View style={styles.vanConfirm}>
+                <Text style={styles.vanConfirmText}>✅ All parts confirmed in van inventory</Text>
+              </View>
+            </>
+          )}
 
-        {tab === 'nav' && (
-          <>
-            <View style={styles.complaintCard}>
-              <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
-              <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
-            </View>
-            <View style={styles.mapPlaceholder}>
-              <Text style={styles.mapPlaceholderText}>📍 Map View · {job.address}</Text>
-            </View>
-            <View style={styles.navInfo}>
-              <Text style={styles.navAddress}>{job.address}</Text>
-              <Text style={styles.navMeta}>3.2 miles · Est. 8 min drive</Text>
-            </View>
-            <Button title="🗺️ Open in Maps" onPress={() => {}} style={styles.navBtn} />
-          </>
-        )}
-      </ScrollView>
-    </View>
+          {tab === 'nav' && (
+            <>
+              <View style={styles.complaintCard}>
+                <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
+                <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
+              </View>
+              <View style={styles.mapPlaceholder}>
+                <Text style={styles.mapPlaceholderText}>📍 Map View · {job.address}</Text>
+              </View>
+              <View style={styles.navInfo}>
+                <Text style={styles.navAddress}>{job.address}</Text>
+                <Text style={styles.navMeta}>3.2 miles · Est. 8 min drive</Text>
+              </View>
+              <Button title="🗺️ Open in Maps" onPress={() => {}} style={styles.navBtn} />
+            </>
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.surface },
     container: { flex: 1, backgroundColor: colors.background },
-    statusBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 18,
-      paddingVertical: 13,
-      backgroundColor: colors.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-    },
-    statusBarRight: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-    statusBarText: { fontSize: 16, color: colors.textSecondary },
     jdHeader: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -212,6 +202,7 @@ function createStyles(colors: ThemeColors) {
     },
     backBtnText: { fontSize: 26, color: colors.accent, fontWeight: '600' },
     jdHeaderCenter: { flex: 1, minWidth: 0 },
+    jdHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     jdAddress: { fontSize: 18, fontWeight: '600', color: colors.text },
     jdSub: { fontSize: 16, color: colors.textSecondary, marginTop: 3 },
     badgeHigh: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 26 },
