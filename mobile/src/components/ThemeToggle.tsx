@@ -1,21 +1,33 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, Platform, Pressable } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 export function ThemeToggle() {
   const { mode, colors, toggleTheme } = useTheme();
+  const isDark = mode === 'dark';
+  const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+  const shortLabel = isDark ? 'Day' : 'Night';
 
   return (
-    <TouchableOpacity
+    <Pressable
       onPress={toggleTheme}
-      style={[styles.btn, { backgroundColor: colors.soft, borderColor: colors.border }]}
-      activeOpacity={0.8}
+      accessibilityRole="switch"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: isDark }}
+      android_ripple={
+        Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.12)', borderless: false } : undefined
+      }
+      style={({ pressed }) => [
+        styles.btn,
+        { backgroundColor: colors.soft, borderColor: colors.border },
+        pressed ? { opacity: 0.88 } : null,
+      ]}
     >
-      <Text style={styles.icon}>{mode === 'dark' ? '☀️' : '🌙'}</Text>
-      <Text style={[styles.label, { color: colors.textSecondary }]}>
-        {mode === 'dark' ? 'Day' : 'Night'}
+      <Text style={styles.icon} importantForAccessibility="no">
+        {isDark ? '☀️' : '🌙'}
       </Text>
-    </TouchableOpacity>
+      <Text style={[styles.label, { color: colors.textSecondary }]}>{shortLabel}</Text>
+    </Pressable>
   );
 }
 

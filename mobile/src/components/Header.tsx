@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle, Platform, Pressable } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 interface HeaderProps {
@@ -16,14 +16,19 @@ export function Header({ title, onBack, right, style }: HeaderProps) {
     <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }, style]}>
       <View style={styles.left}>
         {onBack && (
-          <TouchableOpacity
+          <Pressable
             onPress={onBack}
-            style={styles.backBtn}
+            style={({ pressed }) => [styles.backBtn, pressed ? { opacity: 0.82 } : null]}
             hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            android_ripple={
+              Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.1)', borderless: true } : undefined
+            }
           >
             <Text style={[styles.chevron, { color: colors.accent }]}>‹</Text>
             <Text style={[styles.backText, { color: colors.accent }]}>Back</Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
       <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>

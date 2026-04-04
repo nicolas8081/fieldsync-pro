@@ -1,26 +1,37 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Button } from '../components/Button';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { WasherViewer } from '../components/WasherViewer';
-import { RootStackParamList } from '../navigation/types';
+import { TechnicianStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeColors } from '../theme';
+import { announceForA11y } from '../utils/a11y';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Viewer3D'>;
+type Props = NativeStackScreenProps<TechnicianStackParamList, 'Viewer3D'>;
 
 export function Viewer3DScreen({ route, navigation }: Props) {
+  const { modelUrl } = route.params;
   const { colors } = useTheme();
   const [qualityRating, setQualityRating] = useState<number | null>(null);
   const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const submitFeedback = () => {
-    setSubmitted(true);
+  const submitFeedback = async () => {
+    if (submitted || feedbackSubmitting) return;
+    setFeedbackSubmitting(true);
+    try {
+      await new Promise((r) => setTimeout(r, 350));
+      setSubmitted(true);
+      announceForA11y('Feedback submitted. Thank you.');
+    } finally {
+      setFeedbackSubmitting(false);
+    }
   };
 
   return (
@@ -28,15 +39,23 @@ export function Viewer3DScreen({ route, navigation }: Props) {
       <View style={styles.container}>
 
         <View style={styles.topBar}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [styles.backBtn, pressed ? { opacity: 0.82 } : null]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            android_ripple={
+              Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.12)', borderless: true } : undefined
+            }
+          >
             <Text style={styles.backBtnText}>‹</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.topBarTitle}>3D Viewer</Text>
           <ThemeToggle />
         </View>
 
         <View style={styles.viewer}>
-          <WasherViewer />
+          <WasherViewer modelUrl={modelUrl} />
           <View style={styles.vcontrols}>
             <View style={styles.vctrl}><Text style={styles.vctrlText}>↻ Drag to Rotate</Text></View>
           </View>
@@ -58,12 +77,14 @@ export function Viewer3DScreen({ route, navigation }: Props) {
               variant="secondary"
               onPress={() => navigation.goBack()}
               style={styles.actionBtn}
+              accessibilityHint="Returns to job details"
             />
             <Button
               title="Start Repair →"
               variant="green"
               onPress={() => navigation.goBack()}
               style={styles.actionBtn}
+              accessibilityHint="Marks that you are starting the repair and returns to jobs"
             />
           </View>
 
@@ -72,21 +93,26 @@ export function Viewer3DScreen({ route, navigation }: Props) {
             <Text style={styles.sectionSub}>Help us improve: rate the model and add notes.</Text>
 
             <Text style={styles.label}>Quality (1–5)</Text>
-            <View style={styles.ratingRow}>
+            <View style={styles.ratingRow} accessibilityLabel="Rate model quality from 1 to 5">
               {[1, 2, 3, 4, 5].map((n) => (
-                <TouchableOpacity
+                <Pressable
                   key={n}
-                  style={[
+                  style={({ pressed }) => [
                     styles.ratingBtn,
                     n < 5 && styles.ratingBtnMargin,
                     qualityRating === n && styles.ratingBtnOn,
+                    pressed && qualityRating !== n ? { opacity: 0.88 } : null,
                   ]}
-                  onPress={() => setQualityRating(n)}
+                  onPress={() => {
+                    setQualityRating(n);
+                    announceForA11y(`Quality rating ${n} of 5`);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${n} out of 5 stars`}
+                  accessibilityState={{ selected: qualityRating === n }}
                 >
-                  <Text style={[styles.ratingBtnText, qualityRating === n && styles.ratingBtnTextOn]}>
-                    {n}
-                  </Text>
-                </TouchableOpacity>
+                  <Text style={[styles.ratingBtnText, qualityRating === n && styles.ratingBtnTextOn]}>{n}</Text>
+                </Pressable>
               ))}
             </View>
 
@@ -99,14 +125,18 @@ export function Viewer3DScreen({ route, navigation }: Props) {
               onChangeText={setFeedback}
               multiline
               numberOfLines={3}
+              accessibilityLabel="Feedback notes"
+              editable={!submitted && !feedbackSubmitting}
             />
 
             <Button
               title={submitted ? 'Thanks for your feedback' : 'Submit feedback'}
               onPress={submitFeedback}
-              disabled={submitted}
+              disabled={submitted || feedbackSubmitting}
+              loading={feedbackSubmitting}
               variant="primary"
               style={styles.submitBtn}
+              accessibilityHint="Sends your rating and notes"
             />
             {submitted && (
               <Text style={styles.thanks}>Your feedback helps improve model quality.</Text>

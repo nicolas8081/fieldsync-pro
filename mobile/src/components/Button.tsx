@@ -20,6 +20,10 @@ interface ButtonProps {
   loading?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
+  /** When disabled, skip the faded opacity (e.g. success state that should stay bold). */
+  hideDisabledDimming?: boolean;
 }
 
 export function Button({
@@ -30,8 +34,11 @@ export function Button({
   loading = false,
   style,
   textStyle,
+  accessibilityLabel,
+  accessibilityHint,
+  hideDisabledDimming = false,
 }: ButtonProps) {
-  const { colors } = useTheme();
+  const { colors, fonts } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
 
   const variantStyles: Record<ButtonVariant, { container: ViewStyle; text: TextStyle }> = {
@@ -57,20 +64,33 @@ export function Button({
     Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 4 }).start();
   };
 
+  const isDisabled = disabled || loading;
+
   return (
     <Pressable
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      disabled={disabled || loading}
+      disabled={isDisabled}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
+      style={({ pressed }) => [{ opacity: pressed && !isDisabled ? 0.9 : 1 }]}
     >
       <Animated.View
-        style={[styles.container, v.container, disabled && styles.disabled, { transform: [{ scale }] }, style]}
+        style={[
+          styles.container,
+          v.container,
+          disabled && !loading && !hideDisabledDimming && styles.disabled,
+          { transform: [{ scale }] },
+          style,
+        ]}
       >
         {loading ? (
-          <ActivityIndicator color={v.text.color as string} />
+          <ActivityIndicator color={v.text.color as string} accessibilityLabel="Loading" />
         ) : (
-          <Text style={[styles.text, v.text, textStyle]}>{title}</Text>
+          <Text style={[styles.text, { fontFamily: fonts.bold }, v.text, textStyle]}>{title}</Text>
         )}
       </Animated.View>
     </Pressable>
@@ -86,6 +106,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 60,
   },
-  text: { fontSize: 17, fontWeight: '700', letterSpacing: 0.1 },
+  text: { fontSize: 17, fontWeight: 'normal', letterSpacing: 0.2 },
   disabled: { opacity: 0.45 },
 });

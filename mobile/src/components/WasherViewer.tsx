@@ -1,31 +1,74 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
-import * as FileSystem from 'expo-file-system/legacy';
 
 interface Props {
   highlightPart?: string;
+  /**
+   * Optional hosted GLB/GLTF (https). If missing or not http(s), the bundled team asset
+   * (`assets/models/washer.glb`) is used so the model always loads in the demo app.
+   */
+  modelUrl?: string | null;
 }
 
-export function WasherViewer({ highlightPart = 'Drum Bearing' }: Props) {
+function isRemoteModelUrl(url: string | undefined | null): url is string {
+  if (!url || typeof url !== 'string') return false;
+  const u = url.trim().toLowerCase();
+  return u.startsWith('https://') || u.startsWith('http://');
+}
+
+/** GLB source for model-viewer: remote URL as-is; else bundled asset (web URI or native base64 data URI). */
+async function resolveModelSrc(remoteUrl?: string | null): Promise<string> {
+  if (isRemoteModelUrl(remoteUrl)) {
+    return remoteUrl.trim();
+  }
+
+  const asset = Asset.fromModule(require('../../assets/models/washer.glb'));
+  await asset.downloadAsync();
+
+  if (Platform.OS === 'web') {
+    let uri = asset.uri;
+    if (!uri) {
+      throw new Error('Could not resolve model URL on web');
+    }
+    if (typeof window !== 'undefined' && uri.startsWith('/')) {
+      uri = new URL(uri, window.location.origin).href;
+    }
+    return uri;
+  }
+
+  const FileSystem = await import('expo-file-system/legacy');
+  const base64 = await FileSystem.readAsStringAsync(asset.localUri!, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+  return `data:model/gltf-binary;base64,${base64}`;
+}
+
+/** Safe for double-quoted HTML attribute (model src). */
+function htmlAttrUrl(url: string): string {
+  return url.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+function escapeHtmlText(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+export function WasherViewer({ highlightPart = 'Drum Bearing', modelUrl = null }: Props) {
   const [html, setHtml] = useState<string | null>(null);
   const [status, setStatus] = useState('Loading model...');
 
   useEffect(() => {
     const load = async () => {
       try {
-        setStatus('Loading asset...');
-        const asset = Asset.fromModule(require('../../assets/models/washer.glb'));
-        await asset.downloadAsync();
-        setStatus('Reading file...');
+        setHtml(null);
+        setStatus(isRemoteModelUrl(modelUrl) ? 'Loading remote model...' : 'Loading team model...');
 
-        const base64 = await FileSystem.readAsStringAsync(asset.localUri!, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        const modelSrc = await resolveModelSrc(modelUrl);
 
         setStatus('Building viewer...');
-        const dataUri = `data:model/gltf-binary;base64,${base64}`;
+        const safeSrc = htmlAttrUrl(modelSrc);
+        const remoteAttrs = /^https?:\/\//i.test(modelSrc) ? '\n                crossorigin="anonymous"' : '';
 
         const htmlContent = `
           <!DOCTYPE html>
@@ -63,7 +106,7 @@ export function WasherViewer({ highlightPart = 'Drum Bearing' }: Props) {
             </head>
             <body>
               <model-viewer
-                src="${dataUri}"
+                src="${safeSrc}"${remoteAttrs}
                 auto-rotate
                 camera-controls
                 rotation-per-second="30deg"
@@ -71,7 +114,7 @@ export function WasherViewer({ highlightPart = 'Drum Bearing' }: Props) {
                 exposure="1"
                 camera-orbit="0deg 75deg 2.5m"
               ></model-viewer>
-              <div class="label">⚠ ${highlightPart}</div>
+              <div class="label">⚠ ${escapeHtmlText(highlightPart)}</div>
             </body>
           </html>
         `;
@@ -83,7 +126,7 @@ export function WasherViewer({ highlightPart = 'Drum Bearing' }: Props) {
       }
     };
     load();
-  }, []);
+  }, [modelUrl, highlightPart]);
 
   if (!html) {
     return (

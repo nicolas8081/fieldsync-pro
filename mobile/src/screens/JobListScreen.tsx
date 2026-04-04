@@ -4,21 +4,23 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { fetchJobs } from '../api/jobs';
 import { Job } from '../types/job';
-import { RootStackParamList } from '../navigation/types';
+import { TechnicianStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { usePortalData } from '../context/PortalDataContext';
+import { isTicketOpen } from '../utils/ticketFilters';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { AccessiblePressable } from '../components/AccessiblePressable';
 import { ThemeColors } from '../theme';
+import { isJobActiveOnList } from '../utils/jobFilters';
 
 type Props = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'JobList'>;
+  navigation: NativeStackNavigationProp<TechnicianStackParamList, 'JobList'>;
 };
 
 function getSeverityBadge(colors: ThemeColors): Record<string, { bg: string; color: string; label: string }> {
@@ -31,53 +33,76 @@ function getSeverityBadge(colors: ThemeColors): Record<string, { bg: string; col
 
 export function JobListScreen({ navigation }: Props) {
   const { colors } = useTheme();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, signOut } = useAuth();
+  const { technicianJobs, tickets } = usePortalData();
+  const openUnassignedCount = useMemo(
+    () => tickets.filter((t) => isTicketOpen(t) && !t.assignedTechnicianId).length,
+    [tickets],
+  );
+  const [jobs, setJobs] = useState<Job[]>(technicianJobs);
   const [refreshing, setRefreshing] = useState(false);
 
   const severityBadge = useMemo(() => getSeverityBadge(colors), [colors]);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const load = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-    try {
-      const data = await fetchJobs();
-      setJobs(data);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    load();
-  }, []);
+    setJobs(technicianJobs);
+  }, [technicianJobs]);
 
-  const doneCount = jobs.filter((j) => j.status === 'completed').length;
-  const leftCount = jobs.filter((j) => j.status !== 'completed').length;
+  const activeJobs = useMemo(() => jobs.filter(isJobActiveOnList), [jobs]);
+
+  const sortedJobs = useMemo(() => {
+    const rank: Record<Job['status'], number> = {
+      scheduled: 0,
+      in_progress: 1,
+      completed: 2,
+      cancelled: 3,
+    };
+    return [...activeJobs].sort(
+      (a, b) =>
+        rank[a.status] - rank[b.status] ||
+        new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
+    );
+  }, [activeJobs]);
+
+  const scheduledCount = activeJobs.filter((j) => j.status === 'scheduled').length;
+  const inProgressCount = activeJobs.filter((j) => j.status === 'in_progress').length;
+
+  const statusLabel = (s: Job['status']) =>
+    ({ scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Done', cancelled: 'Cancelled' }[s]);
 
   const renderItem = ({ item }: { item: Job }) => {
     const severity = item.severity || (item.status === 'in_progress' ? 'high' : 'med');
     const badge = severityBadge[severity] || severityBadge.med;
     const isUrg = severity === 'high';
     const isNew = item.status === 'scheduled';
+    const isCancelled = item.status === 'cancelled';
+    const isDone = item.status === 'completed';
 
     return (
-      <TouchableOpacity
-        activeOpacity={0.8}
+      <AccessiblePressable
         onPress={() => navigation.navigate('JobDetail', { jobId: item.id })}
         style={[
           styles.jobCard,
           isUrg && styles.jobCardUrg,
           isNew && !isUrg && styles.jobCardNew,
+          isCancelled && styles.jobCardCancelled,
+          isDone && styles.jobCardDone,
         ]}
+        accessibilityRole="button"
+        accessibilityLabel={`Job at ${item.address}. Status ${statusLabel(item.status)}. ${item.description || item.title}.`}
+        accessibilityHint="Opens job details"
       >
         <View style={styles.jctop}>
           <Text style={styles.jcaddr} numberOfLines={1}>{item.address}</Text>
           <View style={[styles.jcbadge, { backgroundColor: badge.bg }]}>
             <Text style={[styles.jcbadgeText, { color: badge.color }]}>{badge.label}</Text>
           </View>
+        </View>
+        <View style={styles.statusRow}>
+          <Text style={[styles.jobStatusPill, isDone && styles.jobStatusPillDone, isCancelled && styles.jobStatusPillCancelled]}>
+            {statusLabel(item.status).toUpperCase()}
+          </Text>
         </View>
         <Text style={styles.jccomplaint} numberOfLines={2}>
           {item.description || item.title}
@@ -89,7 +114,7 @@ export function JobListScreen({ navigation }: Props) {
           </Text>
           <Text style={styles.jcmetaText}>🧰 Parts loaded</Text>
         </View>
-      </TouchableOpacity>
+      </AccessiblePressable>
     );
   };
 
@@ -98,56 +123,69 @@ export function JobListScreen({ navigation }: Props) {
       <View style={styles.container}>
 
         <View style={styles.statusBar}>
-          <View>
-            <Text style={styles.techGreet}>Good morning,</Text>
-            <Text style={styles.techname}>Marcus Thompson 🛠️</Text>
+          <View style={styles.statusBarLeft}>
+            <View>
+              <Text style={styles.techGreet}>Good morning,</Text>
+              <Text style={styles.techname}>{user?.displayName ?? 'Technician'} 🛠️</Text>
+            </View>
+            <AccessiblePressable
+              onPress={() => signOut()}
+              hitSlop={12}
+              accessibilityRole="button"
+              accessibilityLabel="Sign out"
+              accessibilityHint="Return to portal selection"
+            >
+              <Text style={styles.signOut}>Sign out</Text>
+            </AccessiblePressable>
           </View>
           <ThemeToggle />
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statPill}>
-            <Text style={styles.statNum}>{jobs.length}</Text>
-            <Text style={styles.statLabel}>Today</Text>
+            <Text style={styles.statNum}>{activeJobs.length}</Text>
+            <Text style={styles.statLabel}>Active</Text>
           </View>
           <View style={styles.statPill}>
-            <Text style={[styles.statNum, { color: colors.green }]}>{doneCount}</Text>
-            <Text style={styles.statLabel}>Done</Text>
+            <Text style={[styles.statNum, { color: colors.yellow }]}>{inProgressCount}</Text>
+            <Text style={styles.statLabel}>On site</Text>
           </View>
           <View style={styles.statPill}>
-            <Text style={[styles.statNum, { color: colors.yellow }]}>{leftCount}</Text>
-            <Text style={styles.statLabel}>Left</Text>
+            <Text style={[styles.statNum, { color: colors.accent }]}>{scheduledCount}</Text>
+            <Text style={styles.statLabel}>Scheduled</Text>
           </View>
         </View>
 
-        {loading && jobs.length === 0 ? (
-          <View style={styles.centered}>
-            <ActivityIndicator size="large" color={colors.accent} />
-            <Text style={styles.loadingText}>Loading jobs…</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={jobs}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={styles.list}
-            ListHeaderComponent={
-              <Text style={styles.sectionLabel}>ASSIGNED JOBS</Text>
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={() => load(true)}
-                tintColor={colors.accent}
-              />
-            }
-            ListEmptyComponent={
-              <View style={styles.centered}>
-                <Text style={styles.emptyText}>No jobs assigned</Text>
-              </View>
-            }
-          />
-        )}
+        <FlatList
+          data={sortedJobs}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <Text style={styles.sectionLabel}>ACTIVE JOBS · COMPLETED HIDDEN</Text>
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                setJobs(technicianJobs);
+                requestAnimationFrame(() => setRefreshing(false));
+              }}
+              tintColor={colors.accent}
+            />
+          }
+          ListEmptyComponent={
+            <View style={styles.centered}>
+              <Text style={styles.emptyText}>No jobs in your queue</Text>
+              <Text style={styles.emptyHint}>
+                {openUnassignedCount > 0
+                  ? `${openUnassignedCount} open ticket${openUnassignedCount === 1 ? '' : 's'} in admin ${openUnassignedCount === 1 ? 'has' : 'have'} no technician yet. Open the ticket in Admin and tap Assign to add ${openUnassignedCount === 1 ? 'it' : 'them'} here.`
+                  : 'Your queue lists assigned ticket jobs and demo routes. Completed jobs are hidden. Open admin tickets need an assigned technician before they appear here.'}
+              </Text>
+            </View>
+          }
+        />
       </View>
     </SafeAreaView>
   );
@@ -167,6 +205,8 @@ function createStyles(colors: ThemeColors) {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
+    statusBarLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginRight: 12 },
+    signOut: { fontSize: 15, fontWeight: '600', color: colors.accent },
     techGreet: { fontSize: 16, color: colors.textSecondary, marginBottom: 2 },
     techname: { fontSize: 21, fontWeight: '700', color: colors.text },
     statsRow: {
@@ -212,7 +252,19 @@ function createStyles(colors: ThemeColors) {
     },
     jobCardUrg: { borderLeftWidth: 5, borderLeftColor: colors.red },
     jobCardNew: { borderLeftWidth: 5, borderLeftColor: colors.accent },
-    jctop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+    jobCardDone: { opacity: 0.88 },
+    jobCardCancelled: { opacity: 0.72, borderStyle: 'dashed' as const },
+    jctop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
+    statusRow: { marginBottom: 8 },
+    jobStatusPill: {
+      alignSelf: 'flex-start',
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.accent,
+      letterSpacing: 0.6,
+    },
+    jobStatusPillDone: { color: colors.green },
+    jobStatusPillCancelled: { color: colors.muted },
     jcaddr: { fontSize: 18, fontWeight: '600', color: colors.text, flex: 1, marginRight: 10 },
     jcbadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 26 },
     jcbadgeText: { fontSize: 14, fontWeight: '600' },
@@ -220,7 +272,13 @@ function createStyles(colors: ThemeColors) {
     jcmeta: { flexDirection: 'row', gap: 16 },
     jcmetaText: { fontSize: 14, color: colors.muted },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 31, gap: 13 },
-    loadingText: { fontSize: 20, color: colors.textSecondary },
-    emptyText: { fontSize: 20, color: colors.textSecondary },
+    emptyText: { fontSize: 20, fontWeight: '700', color: colors.text, textAlign: 'center' },
+    emptyHint: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      maxWidth: 340,
+    },
   });
 }

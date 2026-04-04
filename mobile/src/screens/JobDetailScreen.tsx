@@ -1,45 +1,45 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Platform, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { fetchJobById, getDiagnosisForJob } from '../api/jobs';
-import { Job } from '../types/job';
-import { RootStackParamList } from '../navigation/types';
+import { getDiagnosisForJob } from '../api/jobs';
+import { TechnicianStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
+import { usePortalData } from '../context/PortalDataContext';
 import { ThemeColors } from '../theme';
+import { Job } from '../types/job';
+import { announceForA11y } from '../utils/a11y';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'JobDetail'>;
+type Props = NativeStackScreenProps<TechnicianStackParamList, 'JobDetail'>;
 
 type TabId = 'diag' | 'tools' | 'nav';
+
+const JOB_STATUS_OPTIONS: { value: Job['status']; label: string }[] = [
+  { value: 'scheduled', label: 'Scheduled' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'cancelled', label: 'Cancelled' },
+];
 
 export function JobDetailScreen({ route, navigation }: Props) {
   const { jobId } = route.params;
   const { colors } = useTheme();
-  const [job, setJob] = useState<Job | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { technicianJobs, setTechnicianJobStatus, removeTicketLinkedJob, findTicketForJobId } = usePortalData();
+  const job = useMemo(() => technicianJobs.find((j) => j.id === jobId) ?? null, [technicianJobs, jobId]);
   const [tab, setTab] = useState<TabId>('diag');
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchJobById(jobId).then((data) => {
-      if (!cancelled) setJob(data ?? null);
-      setLoading(false);
-    });
-    return () => { cancelled = true; };
-  }, [jobId]);
-
-  if (loading || !job) {
+  if (!job) {
     return (
       <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.container}>
           <Header title="Job" onBack={() => navigation.goBack()} right={<ThemeToggle />} />
           <View style={styles.centered}>
-            <Text style={styles.loadingText}>{loading ? 'Loading…' : 'Job not found'}</Text>
+            <Text style={styles.loadingText}>Job not found</Text>
           </View>
         </View>
       </SafeAreaView>
@@ -48,15 +48,54 @@ export function JobDetailScreen({ route, navigation }: Props) {
 
   const diagnosis = getDiagnosisForJob(jobId);
   const isHigh = job.severity === 'high';
+  const linkedTicket = findTicketForJobId(job.id);
+
+  const applyStatus = (status: Job['status']) => {
+    setTechnicianJobStatus(job.id, status);
+    const labels: Record<Job['status'], string> = {
+      scheduled: 'Marked scheduled',
+      in_progress: 'Marked in progress',
+      completed: 'Marked completed. Ticket updated for admin.',
+      cancelled: 'Marked cancelled',
+    };
+    announceForA11y(labels[status]);
+  };
+
+  const confirmRemoveTicketJob = () => {
+    Alert.alert(
+      'Remove ticket & job?',
+      'This deletes the customer ticket from admin and removes this job from your queue. This cannot be undone in the demo.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            removeTicketLinkedJob(job.id);
+            announceForA11y('Ticket and job removed.');
+            navigation.goBack();
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
 
         <View style={styles.jdHeader}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [styles.backBtn, pressed ? { opacity: 0.82 } : null]}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            android_ripple={
+              Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.1)', borderless: true } : undefined
+            }
+          >
             <Text style={styles.backBtnText}>‹</Text>
-          </TouchableOpacity>
+          </Pressable>
           <View style={styles.jdHeaderCenter}>
             <Text style={styles.jdAddress} numberOfLines={1}>{job.address} · {job.customer}</Text>
             <Text style={styles.jdSub} numberOfLines={1}>{job.description || job.title}</Text>
@@ -71,18 +110,67 @@ export function JobDetailScreen({ route, navigation }: Props) {
           </View>
         </View>
 
-        <View style={styles.tabs}>
-          {(['diag', 'tools', 'nav'] as const).map((t) => (
-            <TouchableOpacity
-              key={t}
-              style={[styles.tab, tab === t && styles.tabOn]}
-              onPress={() => setTab(t)}
-            >
-              <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>
-                {t === 'diag' ? 'AI Diagnosis' : t === 'tools' ? 'Tools' : 'Navigate'}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.statusPanel}>
+          <Text style={styles.statusPanelLabel}>JOB STATUS</Text>
+          <View style={styles.statusChips}>
+            {JOB_STATUS_OPTIONS.map((opt) => {
+              const on = job.status === opt.value;
+              return (
+                <Pressable
+                  key={opt.value}
+                  onPress={() => applyStatus(opt.value)}
+                  style={({ pressed }) => [
+                    styles.statusChip,
+                    on && styles.statusChipOn,
+                    pressed ? { opacity: 0.88 } : null,
+                  ]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Set status to ${opt.label}`}
+                  accessibilityState={{ selected: on }}
+                >
+                  <Text style={[styles.statusChipText, on && styles.statusChipTextOn]}>{opt.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          {linkedTicket ? (
+            <Text style={styles.statusTicketHint}>
+              Linked ticket {linkedTicket.id} · admin sees {linkedTicket.status.replace(/_/g, ' ')}
+            </Text>
+          ) : (
+            <Text style={styles.statusTicketHint}>Demo route job — status is saved on this device only.</Text>
+          )}
+          {linkedTicket ? (
+            <Button
+              title="Remove ticket & job"
+              variant="outline"
+              onPress={confirmRemoveTicketJob}
+              style={styles.removeTicketBtn}
+              accessibilityHint="Deletes the admin ticket and removes this job from your list"
+            />
+          ) : null}
+        </View>
+
+        <View style={styles.tabs} accessibilityRole="tablist">
+          {(['diag', 'tools', 'nav'] as const).map((t) => {
+            const label = t === 'diag' ? 'AI Diagnosis' : t === 'tools' ? 'Tools' : 'Navigate';
+            return (
+              <Pressable
+                key={t}
+                style={({ pressed }) => [
+                  styles.tab,
+                  tab === t && styles.tabOn,
+                  pressed && tab !== t ? { opacity: 0.88 } : null,
+                ]}
+                onPress={() => setTab(t)}
+                accessibilityRole="tab"
+                accessibilityLabel={label}
+                accessibilityState={{ selected: tab === t }}
+              >
+                <Text style={[styles.tabText, tab === t && styles.tabTextOn]}>{label}</Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -115,14 +203,19 @@ export function JobDetailScreen({ route, navigation }: Props) {
                   )}
                 </View>
               ))}
-              {job.modelUrl && (
-                <Button
-                  title="🔍 View 3D Model →"
-                  variant="orange"
-                  onPress={() => navigation.navigate('Viewer3D', { jobId: job.id, modelUrl: job.modelUrl! })}
-                  style={styles.view3dBtn}
-                />
-              )}
+              <Button
+                title="🔍 View 3D Model →"
+                variant="orange"
+                onPress={() =>
+                  navigation.navigate('Viewer3D', {
+                    jobId: job.id,
+                    modelUrl: job.modelUrl ?? '',
+                  })
+                }
+                style={styles.view3dBtn}
+                accessibilityLabel="View three D model"
+                accessibilityHint="Opens the team washer GLB in the 3D viewer. Use a job model URL when your backend provides one."
+              />
             </>
           )}
 
@@ -203,6 +296,37 @@ function createStyles(colors: ThemeColors) {
     backBtnText: { fontSize: 26, color: colors.accent, fontWeight: '600' },
     jdHeaderCenter: { flex: 1, minWidth: 0 },
     jdHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    statusPanel: {
+      marginHorizontal: 21,
+      marginTop: 14,
+      marginBottom: 4,
+      padding: 14,
+      borderRadius: 14,
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    statusPanelLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.textSecondary,
+      letterSpacing: 0.8,
+      marginBottom: 10,
+    },
+    statusChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    statusChip: {
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 10,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    statusChipOn: { backgroundColor: colors.accentLight, borderColor: colors.accent },
+    statusChipText: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
+    statusChipTextOn: { color: colors.accent },
+    statusTicketHint: { fontSize: 12, color: colors.muted, marginTop: 10, lineHeight: 17 },
+    removeTicketBtn: { marginTop: 12 },
     jdAddress: { fontSize: 18, fontWeight: '600', color: colors.text },
     jdSub: { fontSize: 16, color: colors.textSecondary, marginTop: 3 },
     badgeHigh: { paddingHorizontal: 13, paddingVertical: 7, borderRadius: 26 },

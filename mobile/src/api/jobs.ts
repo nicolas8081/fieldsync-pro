@@ -10,7 +10,6 @@ const MOCK_JOBS: Job[] = [
     address: '342 Maple St',
     status: 'scheduled',
     scheduledAt: '2025-02-21T14:00:00Z',
-    modelUrl: 'https://example.com/models/washer.glb',
     description: 'Samsung washer — leaking + banging noise',
     severity: 'high',
   },
