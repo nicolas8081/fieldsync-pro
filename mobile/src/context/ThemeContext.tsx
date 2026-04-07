@@ -2,8 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { darkThemeColors, lightThemeColors, ThemeColors } from '../theme';
 import { fonts } from '../typography/fonts';
-
-const THEME_KEY = '@fieldsync_theme';
+import { FIELD_SYNC_THEME_KEY as THEME_KEY } from '../utils/appLocalStorage';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -13,6 +12,7 @@ type ThemeContextValue = {
   fonts: typeof fonts;
   isDark: boolean;
   toggleTheme: () => void;
+  resetToDefaultTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -35,6 +35,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const resetToDefaultTheme = useCallback(() => {
+    setMode('light');
+  }, []);
+
   return (
     <ThemeContext.Provider
       value={{
@@ -43,6 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         fonts,
         isDark: mode === 'dark',
         toggleTheme,
+        resetToDefaultTheme,
       }}
     >
       {children}

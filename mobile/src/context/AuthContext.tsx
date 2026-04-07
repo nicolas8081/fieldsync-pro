@@ -1,8 +1,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthUser, UserRole } from '../types/portal';
-
-const AUTH_KEY = '@fieldsync_auth_user';
+import { FIELD_SYNC_AUTH_KEY as AUTH_KEY } from '../utils/appLocalStorage';
 
 type AuthContextValue = {
   user: AuthUser | null;

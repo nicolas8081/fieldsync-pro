@@ -1,16 +1,29 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeColors } from '../../theme';
 import { Button } from '../../components/Button';
 import { ThemeToggle } from '../../components/ThemeToggle';
+import { useClearAllLocalAppData } from '../../hooks/useClearAllLocalAppData';
 
 export function AdminAccountScreen() {
   const { colors } = useTheme();
   const { user, signOut } = useAuth();
+  const { clearAllLocalData, clearing } = useClearAllLocalAppData();
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const onClearStorage = () => {
+    Alert.alert(
+      'Clear saved data?',
+      'Removes tickets, support threads, sign-in, and theme preference from this device. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', style: 'destructive', onPress: () => void clearAllLocalData() },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -30,6 +43,15 @@ export function AdminAccountScreen() {
           style={styles.btn}
           accessibilityHint="Returns to portal selection"
         />
+        <Button
+          title="Clear all local data"
+          variant="secondary"
+          onPress={onClearStorage}
+          loading={clearing}
+          disabled={clearing}
+          style={styles.clearBtn}
+          accessibilityHint="Erases FieldSync demo data and signs you out"
+        />
       </View>
     </SafeAreaView>
   );
@@ -46,5 +68,6 @@ function createStyles(colors: ThemeColors) {
     email: { fontSize: 16, color: colors.accent, marginTop: 4 },
     role: { fontSize: 14, color: colors.muted, marginTop: 12, marginBottom: 28 },
     btn: { marginTop: 8 },
+    clearBtn: { marginTop: 12 },
   });
 }

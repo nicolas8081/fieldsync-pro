@@ -1,5 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/types';
@@ -9,6 +19,7 @@ import { UserRole } from '../../types/portal';
 import { ThemeColors } from '../../theme';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { Button } from '../../components/Button';
+import { useClearAllLocalAppData } from '../../hooks/useClearAllLocalAppData';
 
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignIn'> };
 
@@ -22,6 +33,7 @@ export function SignInScreen({ navigation: _navigation }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { signIn } = useAuth();
+  const { clearAllLocalData, clearing } = useClearAllLocalAppData();
   const [role, setRole] = useState<UserRole>('customer');
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -42,6 +54,17 @@ export function SignInScreen({ navigation: _navigation }: Props) {
     } finally {
       setSigningIn(false);
     }
+  };
+
+  const onClearStorage = () => {
+    Alert.alert(
+      'Clear saved data?',
+      'Removes tickets, support threads, sign-in, and theme preference from this device. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Clear', style: 'destructive', onPress: () => void clearAllLocalData() },
+      ]
+    );
   };
 
   const topChromePad = insets.top + 14;
@@ -146,6 +169,15 @@ export function SignInScreen({ navigation: _navigation }: Props) {
           style={styles.primaryBtnWrap}
           accessibilityHint="Opens the portal for the selected role"
         />
+        <Button
+          title="Clear data on this device"
+          variant="secondary"
+          onPress={onClearStorage}
+          loading={clearing}
+          disabled={clearing || signingIn}
+          style={styles.clearBtn}
+          accessibilityHint="Erases FieldSync demo data stored on this phone"
+        />
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -189,5 +221,6 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.surface,
     },
     primaryBtnWrap: { marginTop: 24 },
+    clearBtn: { marginTop: 12 },
   });
 }

@@ -3,8 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ticket, TicketStatus, SupportThreadMessage } from '../types/portal';
 import { Job } from '../types/job';
 import { MOCK_TECHNICIANS } from '../data/technicians';
-
-const STORAGE_KEY = '@fieldsync_portal_data';
+import { FIELD_SYNC_PORTAL_KEY as STORAGE_KEY } from '../utils/appLocalStorage';
 
 const BASE_JOBS: Job[] = [
   {
@@ -78,6 +77,8 @@ type PortalDataContextValue = {
   sendCustomerSupportMessage: (email: string, displayName: string, text: string) => void;
   sendAdminSupportMessage: (customerEmail: string, text: string) => void;
   getSupportInboxForAdmin: () => SupportInboxItem[];
+  /** Clears tickets, extra jobs, and support threads in memory (after storage wipe, persist effect writes fresh data). */
+  resetPortalToDefaults: () => void;
 };
 
 const PortalDataContext = createContext<PortalDataContextValue | null>(null);
@@ -149,6 +150,13 @@ export function PortalDataProvider({ children }: { children: React.ReactNode }) 
     const payload: PersistShape = { tickets, extraJobs, jobPatches, supportThreads };
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }, [tickets, extraJobs, jobPatches, supportThreads, hydrated]);
+
+  const resetPortalToDefaults = useCallback(() => {
+    setTickets([]);
+    setExtraJobs([]);
+    setJobPatches({});
+    setSupportThreads({});
+  }, []);
 
   const createTicket = useCallback(
     (input: Omit<Ticket, 'id' | 'status' | 'createdAt' | 'assignedTechnicianId' | 'adminReplies' | 'linkedJobId'>) => {
@@ -374,6 +382,7 @@ export function PortalDataProvider({ children }: { children: React.ReactNode }) 
       sendCustomerSupportMessage,
       sendAdminSupportMessage,
       getSupportInboxForAdmin,
+      resetPortalToDefaults,
     }),
     [
       tickets,
@@ -390,6 +399,7 @@ export function PortalDataProvider({ children }: { children: React.ReactNode }) 
       sendCustomerSupportMessage,
       sendAdminSupportMessage,
       getSupportInboxForAdmin,
+      resetPortalToDefaults,
     ]
   );
 
