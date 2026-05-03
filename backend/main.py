@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from supabase import create_client, Client
 import os
+import traceback
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,6 +23,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    tb = traceback.format_exc()
+    print("UNHANDLED ERROR:")
+    print(tb)
+    return JSONResponse(status_code=500, content={"detail": str(exc), "traceback": tb})
+
 # Supabase client setup
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -30,26 +39,17 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-
-# Dependency injection - provides Supabase client to endpoints
 def get_supabase() -> Client:
-    """Provides Supabase client to endpoints via dependency injection"""
     return supabase
 
-
-# Import and register routers from app/api/
 from app.api import diagnose
-
-# Override the placeholder get_supabase in diagnose router
 diagnose.get_supabase = get_supabase
 
-# Register router
 app.include_router(
     diagnose.router,
     prefix="/api",
     tags=["diagnosis"]
 )
-
 
 @app.get("/")
 def root():
@@ -59,12 +59,9 @@ def root():
         "version": "0.1.0"
     }
 
-
 @app.get("/health")
 def health_check():
-    """Health check - tests database connection"""
     try:
-        # Test Supabase connection
         result = supabase.table("common_issues").select("id").limit(1).execute()
         return {
             "status": "healthy",
@@ -78,7 +75,6 @@ def health_check():
             "error": str(e),
             "environment": os.getenv("ENVIRONMENT", "development")
         }
-
 
 if __name__ == "__main__":
     import uvicorn

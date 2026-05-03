@@ -1,17 +1,17 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Pressable, Platform, Alert } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Pressable, Platform, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { getDiagnosisForJob } from '../api/jobs';
 import { TechnicianStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { usePortalData } from '../context/PortalDataContext';
 import { ThemeColors } from '../theme';
 import { Job } from '../types/job';
 import { announceForA11y } from '../utils/a11y';
+import { fetchDiagnosis, DiagnosisResult } from '../api/diagnosis';
 
 type Props = NativeStackScreenProps<TechnicianStackParamList, 'JobDetail'>;
 
@@ -30,8 +30,28 @@ export function JobDetailScreen({ route, navigation }: Props) {
   const { technicianJobs, setTechnicianJobStatus, removeTicketLinkedJob, findTicketForJobId } = usePortalData();
   const job = useMemo(() => technicianJobs.find((j) => j.id === jobId) ?? null, [technicianJobs, jobId]);
   const [tab, setTab] = useState<TabId>('diag');
+  const [diagnosis, setDiagnosis] = useState<DiagnosisResult[]>([]);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagError, setDiagError] = useState<string | null>(null);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
+
+  useEffect(() => {
+    if (!job) return;
+    const complaint = job.description || job.title;
+    if (!complaint) return;
+
+    setDiagLoading(true);
+    setDiagError(null);
+
+    fetchDiagnosis(complaint, undefined)
+      .then((results) => {
+        setDiagnosis(results);
+        if (results.length === 0) setDiagError('No matching issues found in database.');
+      })
+      .catch(() => setDiagError('Could not load diagnosis. Check connection.'))
+      .finally(() => setDiagLoading(false));
+  }, [job?.id]);
 
   if (!job) {
     return (
@@ -46,7 +66,6 @@ export function JobDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const diagnosis = getDiagnosisForJob(jobId);
   const isHigh = job.severity === 'high';
   const linkedTicket = findTicketForJobId(job.id);
 
@@ -90,9 +109,7 @@ export function JobDetailScreen({ route, navigation }: Props) {
             style={({ pressed }) => [styles.backBtn, pressed ? { opacity: 0.82 } : null]}
             accessibilityRole="button"
             accessibilityLabel="Go back"
-            android_ripple={
-              Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.1)', borderless: true } : undefined
-            }
+            android_ripple={Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.1)', borderless: true } : undefined}
           >
             <Text style={styles.backBtnText}>‹</Text>
           </Pressable>
@@ -174,35 +191,96 @@ export function JobDetailScreen({ route, navigation }: Props) {
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
           {tab === 'diag' && (
             <>
               <View style={styles.complaintCard}>
                 <Text style={styles.complaintCardLabel}>CUSTOMER COMPLAINT</Text>
                 <Text style={styles.complaintCardText}>"{job.description || job.title}"</Text>
               </View>
-              {diagnosis.map((d, i) => (
-                <View key={i} style={styles.diagCard}>
-                  <View style={styles.diagHdr}>
-                    <Text style={styles.diagIssue}>{d.issue}</Text>
-                    <Text style={styles.confLabel}>{d.confidence}%</Text>
-                  </View>
-                  <View style={styles.confBar}>
-                    <View style={[styles.confFill, { width: `${d.confidence}%` }]} />
-                  </View>
-                  {d.parts && d.parts.length > 0 && (
-                    <View style={styles.partsBox}>
-                      <Text style={styles.partsBoxTitle}>PARTS NEEDED</Text>
-                      <View style={styles.partsTags}>
-                        {d.parts.map((p, j) => (
-                          <View key={j} style={styles.ptag}>
-                            <Text style={styles.ptagText}>{p}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
+
+              {diagLoading ? (
+                <View style={styles.diagLoading}>
+                  <ActivityIndicator color={colors.accent} />
+                  <Text style={styles.diagLoadingText}>Analyzing complaint…</Text>
                 </View>
-              ))}
+              ) : diagError ? (
+                <View style={styles.diagErrorBox}>
+                  <Text style={styles.diagErrorText}>{diagError}</Text>
+                </View>
+              ) : (
+                diagnosis.map((d, i) => {
+                  const parts = d.issue.parts_needed
+                    ? d.issue.parts_needed.split('|').filter(Boolean)
+                    : [];
+                  const tools = d.issue.tools_required
+                    ? d.issue.tools_required.split('|').filter(Boolean)
+                    : [];
+
+                  return (
+                    <View key={i} style={styles.diagCard}>
+                      <View style={styles.diagHdr}>
+                        <Text style={styles.diagIssue}>{d.issue.issue_name}</Text>
+                        <Text style={styles.confLabel}>{d.confidence}%</Text>
+                      </View>
+                      <View style={styles.confBar}>
+                        <View style={[styles.confFill, { width: `${d.confidence}%` }]} />
+                      </View>
+
+                      <Text style={styles.diagCategory}>
+                        {d.issue.category} · {d.issue.diy_difficulty} difficulty
+                      </Text>
+
+                      {d.issue.symptoms ? (
+                        <Text style={styles.diagSymptoms}>{d.issue.symptoms}</Text>
+                      ) : null}
+
+                      {d.errorCode ? (
+                        <View style={styles.errorCodeBox}>
+                          <Text style={styles.errorCodeLabel}>RELATED ERROR CODE</Text>
+                          <Text style={styles.errorCodeVal}>{d.errorCode.code} — {d.errorCode.meaning}</Text>
+                          <Text style={styles.errorCodeSeverity}>Severity: {d.errorCode.severity?.toUpperCase()}</Text>
+                        </View>
+                      ) : null}
+
+                      {parts.length > 0 && (
+                        <View style={styles.partsBox}>
+                          <Text style={styles.partsBoxTitle}>PARTS NEEDED</Text>
+                          <View style={styles.partsTags}>
+                            {parts.map((p, j) => (
+                              <View key={j} style={styles.ptag}>
+                                <Text style={styles.ptagText}>{p}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+
+                      {tools.length > 0 && (
+                        <View style={styles.partsBox}>
+                          <Text style={styles.partsBoxTitle}>TOOLS REQUIRED</Text>
+                          <View style={styles.partsTags}>
+                            {tools.map((t, j) => (
+                              <View key={j} style={styles.ptag}>
+                                <Text style={styles.ptagText}>{t}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+
+                      {d.issue.estimated_time ? (
+                        <Text style={styles.diagTime}>⏱ Est. {d.issue.estimated_time} min</Text>
+                      ) : null}
+
+                      {d.issue.possible_causes ? (
+                        <Text style={styles.diagWarning}>⚠️ {d.issue.possible_causes}</Text>
+                      ) : null}
+                    </View>
+                  );
+                })
+              )}
+
               <Button
                 title="🔍 View 3D Model →"
                 variant="orange"
@@ -214,7 +292,7 @@ export function JobDetailScreen({ route, navigation }: Props) {
                 }
                 style={styles.view3dBtn}
                 accessibilityLabel="View three D model"
-                accessibilityHint="Opens the team washer GLB in the 3D viewer. Use a job model URL when your backend provides one."
+                accessibilityHint="Opens the washer GLB in the 3D viewer"
               />
             </>
           )}
@@ -369,6 +447,15 @@ function createStyles(colors: ThemeColors) {
       lineHeight: 28,
     },
     complaintLabel: { fontSize: 16, color: colors.textSecondary, marginBottom: 13 },
+    diagLoading: { alignItems: 'center', gap: 12, paddingVertical: 32 },
+    diagLoadingText: { fontSize: 15, color: colors.textSecondary },
+    diagErrorBox: {
+      backgroundColor: colors.redLight,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 16,
+    },
+    diagErrorText: { fontSize: 15, color: colors.red },
     diagCard: {
       backgroundColor: colors.card,
       borderWidth: 1,
@@ -383,10 +470,25 @@ function createStyles(colors: ThemeColors) {
       elevation: 2,
     },
     diagHdr: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-    diagIssue: { fontSize: 18, fontWeight: '600', color: colors.text },
+    diagIssue: { fontSize: 18, fontWeight: '600', color: colors.text, flex: 1, marginRight: 8 },
     confLabel: { fontSize: 16, color: colors.accent, fontWeight: '600' },
-    confBar: { height: 7, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: 5 },
+    confBar: { height: 7, backgroundColor: colors.border, borderRadius: 4, overflow: 'hidden', marginBottom: 8 },
     confFill: { height: '100%', borderRadius: 4, backgroundColor: colors.accent },
+    diagCategory: { fontSize: 13, color: colors.textSecondary, marginBottom: 6 },
+    diagSymptoms: { fontSize: 14, color: colors.textSecondary, lineHeight: 20, marginBottom: 8 },
+    diagTime: { fontSize: 14, color: colors.textSecondary, marginTop: 10 },
+    diagWarning: { fontSize: 13, color: colors.yellow, marginTop: 8, lineHeight: 18 },
+    errorCodeBox: {
+      backgroundColor: colors.redLight,
+      borderWidth: 1,
+      borderColor: colors.red,
+      borderRadius: 12,
+      padding: 12,
+      marginTop: 10,
+    },
+    errorCodeLabel: { fontSize: 11, fontWeight: '700', color: colors.red, marginBottom: 4 },
+    errorCodeVal: { fontSize: 14, color: colors.text, fontWeight: '600' },
+    errorCodeSeverity: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
     partsBox: {
       backgroundColor: colors.accentLight,
       borderWidth: 1,
