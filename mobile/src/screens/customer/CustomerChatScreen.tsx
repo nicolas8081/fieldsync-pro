@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -9,6 +10,7 @@ import {
   Platform,
   Pressable,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../context/ThemeContext';
@@ -29,7 +31,7 @@ const seedAi: ChatMessage[] = [
 export function CustomerChatScreen() {
   const { colors } = useTheme();
   const { user, signOut } = useAuth();
-  const { getSupportMessagesForCustomer, sendCustomerSupportMessage } = usePortalData();
+  const { getSupportMessagesForCustomer, sendCustomerSupportMessage, refreshSupportThreadForCustomer } = usePortalData();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [mode, setMode] = useState<Mode>('ai');
   const [aiMessages, setAiMessages] = useState<ChatMessage[]>(seedAi);
@@ -39,6 +41,13 @@ export function CustomerChatScreen() {
   const supportMessages = useMemo(
     () => getSupportMessagesForCustomer(user?.email ?? ''),
     [getSupportMessagesForCustomer, user?.email]
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.email) return;
+      void refreshSupportThreadForCustomer(user.email);
+    }, [refreshSupportThreadForCustomer, user?.email])
   );
 
   const listData: (ChatMessage | SupportThreadMessage)[] = mode === 'ai' ? aiMessages : supportMessages;
@@ -67,9 +76,13 @@ export function CustomerChatScreen() {
       return;
     }
 
-    sendCustomerSupportMessage(user?.email ?? 'customer@demo.local', user?.displayName ?? 'Customer', t);
-    announceForA11y('Message sent to support.');
-    setSending(false);
+    void sendCustomerSupportMessage(user?.email ?? 'customer@demo.local', user?.displayName ?? 'Customer', t)
+      .then(() => announceForA11y('Message sent to support.'))
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : 'Could not send';
+        Alert.alert('Could not send', msg);
+      })
+      .finally(() => setSending(false));
   };
 
   return (

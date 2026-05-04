@@ -50,11 +50,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <PortalDataProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <PortalDataProvider>
             <AppContent />
-          </AuthProvider>
-        </PortalDataProvider>
+          </PortalDataProvider>
+        </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );

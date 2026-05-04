@@ -34,7 +34,7 @@ function getSeverityBadge(colors: ThemeColors): Record<string, { bg: string; col
 export function JobListScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const { user, signOut } = useAuth();
-  const { technicianJobs, tickets } = usePortalData();
+  const { technicianJobs, tickets, technicianStats, refreshPortal } = usePortalData();
   const openUnassignedCount = useMemo(
     () => tickets.filter((t) => isTicketOpen(t) && !t.assignedTechnicianId).length,
     [tickets],
@@ -65,8 +65,9 @@ export function JobListScreen({ navigation }: Props) {
     );
   }, [activeJobs]);
 
-  const scheduledCount = activeJobs.filter((j) => j.status === 'scheduled').length;
-  const inProgressCount = activeJobs.filter((j) => j.status === 'in_progress').length;
+  const scheduledCount = technicianStats?.scheduled ?? activeJobs.filter((j) => j.status === 'scheduled').length;
+  const inProgressCount = technicianStats?.onSite ?? activeJobs.filter((j) => j.status === 'in_progress').length;
+  const activeCount = technicianStats?.active ?? activeJobs.length;
 
   const statusLabel = (s: Job['status']) =>
     ({ scheduled: 'Scheduled', in_progress: 'In progress', completed: 'Done', cancelled: 'Cancelled' }[s]);
@@ -143,7 +144,7 @@ export function JobListScreen({ navigation }: Props) {
 
         <View style={styles.statsRow}>
           <View style={styles.statPill}>
-            <Text style={styles.statNum}>{activeJobs.length}</Text>
+            <Text style={styles.statNum}>{activeCount}</Text>
             <Text style={styles.statLabel}>Active</Text>
           </View>
           <View style={styles.statPill}>
@@ -169,8 +170,7 @@ export function JobListScreen({ navigation }: Props) {
               refreshing={refreshing}
               onRefresh={() => {
                 setRefreshing(true);
-                setJobs(technicianJobs);
-                requestAnimationFrame(() => setRefreshing(false));
+                void refreshPortal().finally(() => setRefreshing(false));
               }}
               tintColor={colors.accent}
             />

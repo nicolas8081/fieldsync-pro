@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -8,12 +9,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AdminStackParamList } from '../../navigation/types';
 import { useTheme } from '../../context/ThemeContext';
 import { usePortalData } from '../../context/PortalDataContext';
+import { fetchAdminChatThread } from '../../api/portalApi';
 import { ThemeColors } from '../../theme';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
@@ -25,20 +28,37 @@ type Props = NativeStackScreenProps<AdminStackParamList, 'AdminSupportChat'>;
 export function AdminSupportChatScreen({ route, navigation }: Props) {
   const { customerEmail, customerName } = route.params;
   const { colors } = useTheme();
-  const { getSupportMessagesForCustomer, sendAdminSupportMessage } = usePortalData();
+  const { sendAdminSupportMessage } = usePortalData();
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const messages = getSupportMessagesForCustomer(customerEmail);
+  const [messages, setMessages] = useState<SupportThreadMessage[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+
+  const loadThread = useCallback(() => {
+    void fetchAdminChatThread(customerEmail).then(setMessages);
+  }, [customerEmail]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadThread();
+    }, [loadThread])
+  );
 
   const send = () => {
     const t = input.trim();
     if (!t || sending) return;
     setSending(true);
-    sendAdminSupportMessage(customerEmail, t);
+    void sendAdminSupportMessage(customerEmail, t)
+      .then(() => {
+        announceForA11y('Message sent to customer.');
+        loadThread();
+      })
+      .catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : 'Could not send';
+        Alert.alert('Could not send', msg);
+      })
+      .finally(() => setSending(false));
     setInput('');
-    announceForA11y('Message sent to customer.');
-    setTimeout(() => setSending(false), 200);
   };
 
   const renderMsg = ({ item }: { item: SupportThreadMessage }) => {

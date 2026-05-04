@@ -2,12 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthUser, UserRole } from '../types/portal';
 import { FIELD_SYNC_AUTH_KEY as AUTH_KEY } from '../utils/appLocalStorage';
+import { fetchCustomerAccountByEmail } from '../api/portalApi';
 
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
   signIn: (params: { role: UserRole; email: string; displayName: string; password?: string }) => Promise<void>;
   signOut: () => Promise<void>;
+  updateSession: (patch: Partial<AuthUser>) => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -33,15 +35,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  const updateSession = useCallback((patch: Partial<AuthUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      void AsyncStorage.setItem(AUTH_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const signIn = useCallback(
-    async ({ role, email, displayName }: { role: UserRole; email: string; displayName: string; password?: string }) => {
+    async ({
+      role,
+      email,
+      displayName,
+      password,
+    }: {
+      role: UserRole;
+      email: string;
+      displayName: string;
+      password?: string;
+    }) => {
       const trimmed = email.trim();
-      const name = displayName.trim() || (role === 'admin' ? 'Admin' : role === 'technician' ? 'Technician' : 'Customer');
+      const name =
+        displayName.trim() ||
+        (role === 'admin' ? 'Admin' : role === 'technician' ? 'Technician' : 'Customer');
+
+      let customerId: string | undefined;
+      if (role === 'customer' && trimmed) {
+        try {
+          const acc = await fetchCustomerAccountByEmail(trimmed);
+          if (acc) customerId = acc.id;
+        } catch {
+          /* offline or server error — user can still sign in; id is set after first ticket */
+        }
+      }
+
       const u: AuthUser = {
         id: makeUserId(role, trimmed || role),
         email: trimmed || `${role}@demo.fieldsync.local`,
         displayName: name,
         role,
+        customerId,
+        accountPassword: role === 'technician' && password ? password : undefined,
       };
       await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(u));
       setUser(u);
@@ -55,7 +91,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, signIn, signOut, updateSession }}>
+      {children}
+    </AuthContext.Provider>
   );
 }
 

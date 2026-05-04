@@ -63,7 +63,7 @@ export function AdminTicketDetailScreen({ route, navigation }: Props) {
     const body = reply.trim();
     const start = Date.now();
     try {
-      addAdminReply(ticket.id, body);
+      await addAdminReply(ticket.id, body);
       setReply('');
       const elapsed = Date.now() - start;
       await new Promise((r) => setTimeout(r, Math.max(0, 280 - elapsed)));
@@ -137,8 +137,9 @@ export function AdminTicketDetailScreen({ route, navigation }: Props) {
                 key={tech.id}
                 style={[styles.techChip, selected && styles.techChipOn]}
                 onPress={() => {
-                  assignTechnician(ticket.id, tech.id);
-                  announceForA11y(`Assigned ${tech.name}.`);
+                  void assignTechnician(ticket.id, tech.id)
+                    .then(() => announceForA11y(`Assigned ${tech.name}.`))
+                    .catch(() => announceForA11y('Could not assign on server.'));
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={`Assign ${tech.name}`}

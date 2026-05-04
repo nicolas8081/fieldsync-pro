@@ -1,0 +1,8 @@
+FieldSync Pro - AI Model Metadata
+==================================================
+
+timestamp: 20260406_182945
+accuracy: 0.6936936936936937
+top3_accuracy: 0.8198198198198198
+vectorizer_file: models/tfidf_vectorizer_20260406_182945.pkl
+classifier_file: models/naive_bayes_classifier_20260406_182945.pkl

@@ -1,4 +1,4 @@
-const BACKEND_URL = 'http://192.168.1.11:8000';
+import { getApiBase } from '../config/api';
 
 export interface CommonIssue {
   issue_id: number;
@@ -34,7 +34,7 @@ export async function fetchDiagnosis(
   errorCode?: string
 ): Promise<DiagnosisResult[]> {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/diagnose`, {
+    const response = await fetch(`${getApiBase()}/api/diagnose`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

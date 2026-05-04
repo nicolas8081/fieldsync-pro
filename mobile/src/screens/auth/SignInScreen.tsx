@@ -96,7 +96,11 @@ export function SignInScreen({ navigation: _navigation }: Props) {
           showsVerticalScrollIndicator={false}
         >
         <Text style={styles.headline}>Choose your portal</Text>
-        <Text style={styles.sub}>Demo auth — use any email; password is optional.</Text>
+        <Text style={styles.sub}>
+          {role === 'technician'
+            ? 'Use the technician email and password from your admin-created account (HTTP Basic to the API).'
+            : 'Demo auth — use any email. Technicians need a real password; others can leave it blank.'}
+        </Text>
 
         <Text accessibilityRole="text" style={styles.groupLabel}>
           Portal type

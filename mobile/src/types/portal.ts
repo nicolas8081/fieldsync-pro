@@ -5,6 +5,10 @@ export interface AuthUser {
   email: string;
   displayName: string;
   role: UserRole;
+  /** Set after backend resolves customer by email or after first ticket (UUID). */
+  customerId?: string;
+  /** Technician credentials for HTTP Basic against `/technician/*` (stored for demo like the rest of auth). */
+  accountPassword?: string;
 }
 
 export interface Technician {

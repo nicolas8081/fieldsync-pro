@@ -1,4 +1,5 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
@@ -18,10 +19,16 @@ type Nav = CompositeNavigationProp<
 
 export function AdminSupportChatsScreen() {
   const { colors } = useTheme();
-  const { getSupportInboxForAdmin } = usePortalData();
+  const { getSupportInboxForAdmin, refreshPortal } = usePortalData();
   const navigation = useNavigation<Nav>();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const inbox = useMemo(() => getSupportInboxForAdmin(), [getSupportInboxForAdmin]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshPortal();
+    }, [refreshPortal])
+  );
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>

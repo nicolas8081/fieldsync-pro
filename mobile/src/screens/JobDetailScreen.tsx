@@ -75,32 +75,32 @@ export function JobDetailScreen({ route, navigation }: Props) {
   .filter(Boolean)
   .join('|');
 
-console.log('=== diagnosis:', diagnosis.length, 'allAffectedParts:', allAffectedParts);
-
   const applyStatus = (status: Job['status']) => {
-    setTechnicianJobStatus(job.id, status);
-    const labels: Record<Job['status'], string> = {
-      scheduled: 'Marked scheduled',
-      in_progress: 'Marked in progress',
-      completed: 'Marked completed. Ticket updated for admin.',
-      cancelled: 'Marked cancelled',
-    };
-    announceForA11y(labels[status]);
+    void setTechnicianJobStatus(job.id, status).then(() => {
+      const labels: Record<Job['status'], string> = {
+        scheduled: 'Marked scheduled',
+        in_progress: 'Marked in progress',
+        completed: 'Marked completed. Ticket updated for admin.',
+        cancelled: 'Marked cancelled',
+      };
+      announceForA11y(labels[status]);
+    });
   };
 
   const confirmRemoveTicketJob = () => {
     Alert.alert(
-      'Remove ticket & job?',
-      'This deletes the customer ticket from admin and removes this job from your queue. This cannot be undone in the demo.',
+      'Remove from your queue?',
+      'This unassigns the ticket and sets it back to open in admin so another technician can take it.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Remove',
           style: 'destructive',
           onPress: () => {
-            removeTicketLinkedJob(job.id);
-            announceForA11y('Ticket and job removed.');
-            navigation.goBack();
+            void removeTicketLinkedJob(job.id).then(() => {
+              announceForA11y('Job removed from your queue.');
+              navigation.goBack();
+            });
           },
         },
       ]

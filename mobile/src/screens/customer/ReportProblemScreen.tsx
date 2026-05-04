@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -61,7 +62,7 @@ export function ReportProblemScreen({ navigation }: Props) {
     setSubmitPhase('sending');
     const start = Date.now();
     try {
-      const t = createTicket({
+      const t = await createTicket({
         customerName: user?.displayName ?? 'Customer',
         customerEmail: user?.email ?? 'customer@demo.local',
         customerPhone: phone.trim() || 'Not provided',
@@ -80,7 +81,9 @@ export function ReportProblemScreen({ navigation }: Props) {
         setSubmittedTicketId(null);
         navigation.navigate('CustomerHome');
       }, 2600);
-    } catch {
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Could not reach the server';
+      Alert.alert('Ticket not saved', msg);
       setSubmitPhase('idle');
       setSubmittedTicketId(null);
     }

@@ -11,7 +11,7 @@ import { AccessiblePressable } from '../../components/AccessiblePressable';
 export function CustomerTicketsScreen() {
   const { colors } = useTheme();
   const { user, signOut } = useAuth();
-  const { getTicketsForCustomerEmail } = usePortalData();
+  const { getTicketsForCustomerEmail, syncError } = usePortalData();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const list = useMemo(() => {
     const raw = getTicketsForCustomerEmail(user?.email ?? '');
@@ -24,6 +24,11 @@ export function CustomerTicketsScreen() {
         <View style={styles.titleBlock}>
           <Text style={styles.title}>My tickets</Text>
           <Text style={styles.subtitle}>All requests, including resolved and closed</Text>
+          {syncError ? (
+            <Text style={styles.syncErr} accessibilityLiveRegion="polite">
+              {syncError}
+            </Text>
+          ) : null}
         </View>
         <View style={styles.headerActions}>
           <AccessiblePressable
@@ -77,6 +82,7 @@ function createStyles(colors: ThemeColors) {
     titleBlock: { flex: 1, marginRight: 12 },
     title: { fontSize: 22, fontWeight: '800', color: colors.text },
     subtitle: { fontSize: 13, color: colors.textSecondary, marginTop: 4, lineHeight: 18 },
+    syncErr: { fontSize: 12, color: colors.red, marginTop: 8, lineHeight: 17 },
     list: { padding: 16, paddingBottom: 40 },
     empty: { textAlign: 'center', color: colors.textSecondary, fontSize: 16, marginTop: 40, paddingHorizontal: 24 },
     card: {
