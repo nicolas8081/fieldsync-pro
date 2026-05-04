@@ -6,6 +6,7 @@ create table if not exists public.customers (
   email text not null unique,
   full_name text not null,
   phone text,
+  password_hash text,
   created_at timestamptz not null default now()
 );
 
@@ -14,6 +15,16 @@ create table if not exists public.technicians (
   email text not null unique,
   full_name text not null,
   phone text,
+  password_hash text not null,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- Portal admins (same email/password login as other roles; paired with ADMIN_API_KEY for /admin/* API calls).
+create table if not exists public.admins (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  full_name text not null,
   password_hash text not null,
   active boolean not null default true,
   created_at timestamptz not null default now()
@@ -66,3 +77,7 @@ alter table public.technicians disable row level security;
 alter table public.customers disable row level security;
 alter table public.tickets disable row level security;
 alter table public.ticket_messages disable row level security;
+alter table public.admins disable row level security;
+
+-- After creating tables, reload PostgREST so `admins` is reachable (avoids PostgREST PGRST205).
+notify pgrst, 'reload schema';

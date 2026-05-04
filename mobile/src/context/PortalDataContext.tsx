@@ -115,6 +115,10 @@ export function PortalDataProvider({ children }: { children: React.ReactNode }) 
         const msgs = await fetchCustomerSupportThread(cid);
         setSupportCache((prev) => ({ ...prev, [normalizeSupportEmail(user.email)]: msgs }));
       } else if (user.role === 'technician') {
+        // Don't reuse admin/customer lists in technician UI (avoids misleading counts / hints).
+        setTickets([]);
+        setTechnicians([]);
+        setSupportInbox([]);
         const pw = user.accountPassword;
         if (!pw) {
           setTechnicianJobs([]);
@@ -221,9 +225,17 @@ export function PortalDataProvider({ children }: { children: React.ReactNode }) 
   );
 
   const getTicketsForCustomerEmail = useCallback(
-    (email: string) =>
-      tickets.filter((t) => t.customerEmail.toLowerCase() === email.trim().toLowerCase()),
-    [tickets]
+    (email: string) => {
+      const normalized = email.trim().toLowerCase();
+      const direct = tickets.filter((t) => t.customerEmail.toLowerCase() === normalized);
+      if (direct.length > 0) return direct;
+      // Customer endpoints return tickets scoped to customer_id and may omit embedded customer email.
+      if (user?.role === 'customer' && user.customerId) {
+        return tickets;
+      }
+      return direct;
+    },
+    [tickets, user?.customerId, user?.role]
   );
 
   const getSupportMessagesForCustomer = useCallback(

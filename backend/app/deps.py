@@ -35,10 +35,12 @@ async def get_current_technician(
     credentials: Annotated[HTTPBasicCredentials, Depends(http_basic)],
     supabase: Annotated[Client, Depends(get_supabase_dep)],
 ) -> dict:
+    # Case-insensitive match so mobile login matches DB email regardless of casing.
+    username = credentials.username.strip()
     res = (
         supabase.table("technicians")
         .select("id, email, password_hash, active, full_name")
-        .eq("email", credentials.username)
+        .ilike("email", username)
         .limit(1)
         .execute()
     )

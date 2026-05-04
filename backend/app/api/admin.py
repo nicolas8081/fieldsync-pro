@@ -7,6 +7,8 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 
+from app.models.auth import AdminPortalPublic, CreatePortalAdminRequest
+
 from app.core.security import hash_password
 from app.deps import get_supabase_dep, verify_admin_key
 from app.models.tickets import (
@@ -59,6 +61,86 @@ def list_technicians(
     ]
 
 
+@router.post("/admins", response_model=AdminPortalPublic, status_code=status.HTTP_201_CREATED)
+def create_portal_admin(
+    body: CreatePortalAdminRequest,
+    _: None = Depends(verify_admin_key),
+    supabase: Client = Depends(get_supabase_dep),
+) -> AdminPortalPublic:
+    """Add a dashboard admin login (stored in table `admins`). Uses same email/password `/auth/login` — X-Admin-Key still protects /admin/*."""
+    row = {
+        "email": str(body.email).strip().lower(),
+        "full_name": body.full_name.strip(),
+        "password_hash": hash_password(body.password),
+        "active": body.active,
+    }
+    try:
+        supabase.table("admins").insert(row).execute()
+    except Exception as e:
+        raw = str(e).lower()
+        if "admins" in raw and ("does not exist" in raw or "schema cache" in raw or "pgrst205" in raw):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    "Run `backend/sql/migration_admins_table.sql` in Supabase, then reload PostgREST: "
+                    "`NOTIFY pgrst, 'reload schema';` (SQL Editor). Retry the request."
+                ),
+            ) from e
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Could not create admin: {e!s}") from e
+
+    res = (
+        supabase.table("admins")
+        .select("id, email, full_name, active")
+        .eq("email", str(body.email).strip().lower())
+        .limit(1)
+        .execute()
+    )
+    r = (res.data or [None])[0]
+    if not r:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Insert failed")
+    return AdminPortalPublic(
+        id=UUID(str(r["id"])),
+        email=str(r["email"]),
+        full_name=str(r["full_name"]),
+        active=bool(r.get("active", True)),
+    )
+
+
+@router.get("/admins", response_model=List[AdminPortalPublic])
+def list_portal_admins(
+    _: None = Depends(verify_admin_key),
+    supabase: Client = Depends(get_supabase_dep),
+) -> List[AdminPortalPublic]:
+    try:
+        res = (
+            supabase.table("admins")
+            .select("id, email, full_name, active")
+            .order("created_at", desc=True)
+            .execute()
+        )
+    except Exception as e:
+        raw = str(e).lower()
+        if "admins" in raw and ("does not exist" in raw or "schema cache" in raw or "pgrst205" in raw):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    "Run `backend/sql/migration_admins_table.sql` in Supabase, then reload PostgREST: "
+                    "`NOTIFY pgrst, 'reload schema';` (SQL Editor)."
+                ),
+            ) from e
+        raise
+    rows = res.data or []
+    return [
+        AdminPortalPublic(
+            id=UUID(str(r["id"])),
+            email=str(r["email"]),
+            full_name=str(r["full_name"]),
+            active=bool(r.get("active", True)),
+        )
+        for r in rows
+    ]
+
+
 @router.post("/technicians", response_model=TechnicianPublic, status_code=status.HTTP_201_CREATED)
 def create_technician(
     body: CreateTechnicianRequest,
@@ -66,7 +148,7 @@ def create_technician(
     supabase: Client = Depends(get_supabase_dep),
 ) -> TechnicianPublic:
     row = {
-        "email": str(body.email),
+        "email": str(body.email).strip().lower(),
         "full_name": body.full_name,
         "phone": body.phone,
         "password_hash": hash_password(body.password),

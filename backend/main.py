@@ -86,7 +86,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def get_supabase() -> Client:
     return supabase
 
-from app.api import admin, customer, diagnose, technician
+from app.api import admin, auth, customer, diagnose, technician
 
 diagnose.get_supabase = get_supabase
 
@@ -95,6 +95,7 @@ app.include_router(
     prefix="/api",
     tags=["diagnosis"],
 )
+app.include_router(auth.router)
 app.include_router(customer.router)
 app.include_router(admin.router)
 app.include_router(technician.router)

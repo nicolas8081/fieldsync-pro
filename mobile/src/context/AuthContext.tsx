@@ -4,10 +4,19 @@ import { AuthUser, UserRole } from '../types/portal';
 import { FIELD_SYNC_AUTH_KEY as AUTH_KEY } from '../utils/appLocalStorage';
 import { fetchCustomerAccountByEmail } from '../api/portalApi';
 
+export type SignInParams = {
+  role: UserRole;
+  email: string;
+  displayName: string;
+  password?: string;
+  /** When already known from /auth/login — skips a separate account fetch. */
+  customerId?: string;
+};
+
 type AuthContextValue = {
   user: AuthUser | null;
   loading: boolean;
-  signIn: (params: { role: UserRole; email: string; displayName: string; password?: string }) => Promise<void>;
+  signIn: (params: SignInParams) => Promise<void>;
   signOut: () => Promise<void>;
   updateSession: (patch: Partial<AuthUser>) => void;
 };
@@ -44,46 +53,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const signIn = useCallback(
-    async ({
-      role,
-      email,
-      displayName,
-      password,
-    }: {
-      role: UserRole;
-      email: string;
-      displayName: string;
-      password?: string;
-    }) => {
-      const trimmed = email.trim();
-      const name =
-        displayName.trim() ||
-        (role === 'admin' ? 'Admin' : role === 'technician' ? 'Technician' : 'Customer');
+  const signIn = useCallback(async ({ role, email, displayName, password, customerId: customerIdArg }: SignInParams) => {
+    const trimmed = email.trim();
+    const name =
+      displayName.trim() ||
+      (role === 'admin' ? 'Admin' : role === 'technician' ? 'Technician' : 'Customer');
 
-      let customerId: string | undefined;
-      if (role === 'customer' && trimmed) {
-        try {
-          const acc = await fetchCustomerAccountByEmail(trimmed);
-          if (acc) customerId = acc.id;
-        } catch {
-          /* offline or server error — user can still sign in; id is set after first ticket */
-        }
+    let customerId: string | undefined = customerIdArg;
+    if (role === 'customer' && trimmed && !customerId) {
+      try {
+        const acc = await fetchCustomerAccountByEmail(trimmed);
+        if (acc) customerId = acc.id;
+      } catch {
+        /* offline or server error */
       }
+    }
 
-      const u: AuthUser = {
-        id: makeUserId(role, trimmed || role),
-        email: trimmed || `${role}@demo.fieldsync.local`,
-        displayName: name,
-        role,
-        customerId,
-        accountPassword: role === 'technician' && password ? password : undefined,
-      };
-      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(u));
-      setUser(u);
-    },
-    []
-  );
+    const u: AuthUser = {
+      id: makeUserId(role, trimmed || role),
+      email: trimmed || `${role}@demo.fieldsync.local`,
+      displayName: name,
+      role,
+      customerId,
+      accountPassword: role === 'technician' && password ? password : undefined,
+    };
+    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(u));
+    setUser(u);
+  }, []);
 
   const signOut = useCallback(async () => {
     await AsyncStorage.removeItem(AUTH_KEY);

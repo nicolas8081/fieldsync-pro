@@ -13,7 +13,6 @@ import { TechnicianStackParamList } from '../navigation/types';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { usePortalData } from '../context/PortalDataContext';
-import { isTicketOpen } from '../utils/ticketFilters';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { AccessiblePressable } from '../components/AccessiblePressable';
 import { ThemeColors } from '../theme';
@@ -34,11 +33,7 @@ function getSeverityBadge(colors: ThemeColors): Record<string, { bg: string; col
 export function JobListScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const { user, signOut } = useAuth();
-  const { technicianJobs, tickets, technicianStats, refreshPortal } = usePortalData();
-  const openUnassignedCount = useMemo(
-    () => tickets.filter((t) => isTicketOpen(t) && !t.assignedTechnicianId).length,
-    [tickets],
-  );
+  const { technicianJobs, technicianStats, refreshPortal, syncError } = usePortalData();
   const [jobs, setJobs] = useState<Job[]>(technicianJobs);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -142,6 +137,14 @@ export function JobListScreen({ navigation }: Props) {
           <ThemeToggle />
         </View>
 
+        {syncError ? (
+          <View style={[styles.syncBanner, { borderColor: colors.red, backgroundColor: colors.redLight }]}>
+            <Text style={[styles.syncBannerText, { color: colors.red }]} selectable>
+              {syncError}. Check email/password and pull to refresh.
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.statsRow}>
           <View style={styles.statPill}>
             <Text style={styles.statNum}>{activeCount}</Text>
@@ -178,11 +181,13 @@ export function JobListScreen({ navigation }: Props) {
           ListEmptyComponent={
             <View style={styles.centered}>
               <Text style={styles.emptyText}>No jobs in your queue</Text>
-              <Text style={styles.emptyHint}>
-                {openUnassignedCount > 0
-                  ? `${openUnassignedCount} open ticket${openUnassignedCount === 1 ? '' : 's'} in admin ${openUnassignedCount === 1 ? 'has' : 'have'} no technician yet. Open the ticket in Admin and tap Assign to add ${openUnassignedCount === 1 ? 'it' : 'them'} here.`
-                  : 'Your queue lists assigned ticket jobs and demo routes. Completed jobs are hidden. Open admin tickets need an assigned technician before they appear here.'}
-              </Text>
+              {syncError ? (
+                <Text style={styles.emptyHint}>
+                  Fix the error above — jobs load from GET /technician/jobs using your technician email and password.
+                </Text>
+              ) : (
+                <Text style={styles.emptyHint}>Assigned jobs appear here. Pull down to refresh.</Text>
+              )}
             </View>
           }
         />
@@ -209,6 +214,14 @@ function createStyles(colors: ThemeColors) {
     signOut: { fontSize: 15, fontWeight: '600', color: colors.accent },
     techGreet: { fontSize: 16, color: colors.textSecondary, marginBottom: 2 },
     techname: { fontSize: 21, fontWeight: '700', color: colors.text },
+    syncBanner: {
+      marginHorizontal: 21,
+      marginTop: 12,
+      padding: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+    },
+    syncBannerText: { fontSize: 14, lineHeight: 20, fontWeight: '600' },
     statsRow: {
       flexDirection: 'row',
       gap: 13,

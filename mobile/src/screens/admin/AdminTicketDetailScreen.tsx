@@ -20,6 +20,7 @@ import { Button } from '../../components/Button';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
 import { announceForA11y } from '../../utils/a11y';
+import { ticketRefLine } from '../../utils/ticketDisplay';
 
 type Props = NativeStackScreenProps<AdminStackParamList, 'AdminTicketDetail'>;
 
@@ -104,7 +105,7 @@ export function AdminTicketDetailScreen({ route, navigation }: Props) {
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
-        <Text style={styles.id}>{ticket.id}</Text>
+        <Text style={styles.id}>{ticketRefLine(ticket.id)}</Text>
         <Text style={styles.status}>{ticket.status}</Text>
 
         <Text style={styles.section}>Customer</Text>

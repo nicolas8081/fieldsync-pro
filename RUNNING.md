@@ -58,7 +58,24 @@ This project has a **FastAPI backend** (talks to **Supabase**), an **Expo / Reac
    then every **`/admin/*`** request must send header **`X-Admin-Key: some-long-random-string`**.  
    If `ADMIN_API_KEY` is **unset**, admin routes stay open (fine for **local dev only**).
 
-4. Start the API:
+   **Mobile “Sign in” as admin** (`POST /auth/login`) uses optional env (check only if set):
+   - **`ADMIN_PORTAL_PASSWORD`** — portal password (for a quick demo, use the **same value** as `ADMIN_API_KEY`).
+   - **`ADMIN_PORTAL_EMAIL`** — optional; defaults to **`admin@fieldsync.local`**.
+
+   If `ADMIN_PORTAL_PASSWORD` is **unset**, you can still sign in as admin if you have rows in the **`admins`** table (after running **`migration_admins_table.sql`** and **`/auth/bootstrap-admin`** or **`POST /admin/admins`**). Technicians and customers are unchanged.
+
+4. **Database:**
+   - If `customers` has no **`password_hash`**, run **`backend/sql/migration_add_customer_password.sql`** once in Supabase.
+   - For **portal admins in the DB**, run **`backend/sql/migration_admins_table.sql`** once (that file ends with **`NOTIFY pgrst, 'reload schema';`** so Supabase exposes the new table — without this, **`/auth/login`** and **`POST /admin/admins`** fail with **`PGRST205` / schema cache**). If you already ran the DDL without NOTIFY, paste **`NOTIFY pgrst, 'reload schema';`** into the SQL Editor and run it. Extended **`backend/sql/schema.sql`** also includes the same NOTIFY at the end when you bootstrap a fresh project from that file only.
+
+   **Bootstrap the first portal admin** (when `admins` is empty):
+   - In **`backend/.env`** set **`ADMIN_BOOTSTRAP_SECRET=some-long-random-string`** and restart the API.
+   - `POST http://localhost:8000/auth/bootstrap-admin` with JSON body, e.g.  
+     `{ "bootstrap_secret": "same-string", "email": "you@company.com", "password": "at-least-8-chars", "full_name": "Your Name" }`  
+     (Swagger **`/docs`**, curl, or any client.)
+   - After that, **Sign in** in the mobile app uses that email + password; **`EXPO_PUBLIC_ADMIN_API_KEY`** must still match **`ADMIN_API_KEY`** for admin API actions.
+
+5. Start the API:
 
    ```bash
    cd backend
@@ -68,7 +85,7 @@ This project has a **FastAPI backend** (talks to **Supabase**), an **Expo / Reac
 
    Default URL: **`http://0.0.0.0:8000`** (same machine: **`http://localhost:8000`**).
 
-5. Quick checks in a browser or curl:
+6. Quick checks in a browser or curl:
    - **`http://localhost:8000/`** — API metadata.
    - **`http://localhost:8000/docs`** — Swagger UI for all routes.
    - **`http://localhost:8000/health`** — should report healthy if Supabase + expected tables respond.
@@ -136,9 +153,10 @@ All customer/ticket/message rows created from the **mobile app** will appear in 
    **Expo Web + API on localhost:** in **`mobile/.env`** use `EXPO_PUBLIC_API_URL=http://localhost:8000` (same machine as the browser). Restart Expo after changing `.env`. If the UI loads but **“Network request failed”** or no Supabase rows appear, restart the backend after pulling the latest code — CORS was fixed so browsers are not blocked on `allow_origins: *` + credentials.
 
 6. **Sign-in tips (connected mode)**  
-   - **Customer:** any email; after the first **Report problem** ticket, the app stores your Supabase **customer id**. Data shows under **My tickets** and in Supabase.  
-   - **Admin:** use email/name as you like; if `EXPO_PUBLIC_ADMIN_API_KEY` is required, it must match the backend.  
-   - **Technician:** use the **exact email + password** you created with **`POST /admin/technicians`**.
+   - **Login** uses **`POST /auth/login`**: one screen, no role picker. The API returns **customer**, **technician**, or **admin** from the database (or admin portal env — see `ADMIN_PORTAL_PASSWORD` above).  
+   - **Customer Sign up** uses **`POST /auth/signup/customer`** (password min 8). If you already have a customer row from an old “report problem” flow with no password, sign up **claims** that email and sets a password.  
+   - **Admin** in the app still needs **`EXPO_PUBLIC_ADMIN_API_KEY`** for **`/admin/*`** actions; use the same secret as `ADMIN_API_KEY` unless you’ve split them.  
+   - **Technician:** sign in with the **email + password** from **`POST /admin/technicians`** (Team tab in admin).
 
 ---
 

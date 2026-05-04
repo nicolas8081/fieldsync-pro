@@ -14,6 +14,7 @@ export interface AuthUser {
 export interface Technician {
   id: string;
   name: string;
+  email: string;
   phone: string;
   specialty: string;
   available: boolean;

@@ -1,6 +1,5 @@
+import { getApiBase } from '../config/api';
 import { Job, DiagnosisItem } from '../types/job';
-
-const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
 
 const MOCK_JOBS: Job[] = [
   {
@@ -36,7 +35,7 @@ const MOCK_JOBS: Job[] = [
 
 export async function fetchJobs(): Promise<Job[]> {
   try {
-    const res = await fetch(`${API_BASE}/api/jobs`);
+    const res = await fetch(`${getApiBase()}/api/jobs`);
     if (res.ok) {
       const data = await res.json();
       return Array.isArray(data) ? data : data.jobs || [];
@@ -49,7 +48,7 @@ export async function fetchJobs(): Promise<Job[]> {
 
 export async function fetchJobById(id: string): Promise<Job | null> {
   try {
-    const res = await fetch(`${API_BASE}/api/jobs/${id}`);
+    const res = await fetch(`${getApiBase()}/api/jobs/${id}`);
     if (res.ok) return await res.json();
   } catch {
     // Fallback to mock

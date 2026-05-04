@@ -5,6 +5,53 @@ import type { SupportThreadMessage } from '../types/portal';
 
 const JSON_HDR = { 'Content-Type': 'application/json' };
 
+export type PortalLoginResult = {
+  role: 'customer' | 'technician' | 'admin';
+  email: string;
+  display_name: string;
+  customer_id?: string | null;
+  technician_id?: string | null;
+  admin_user_id?: string | null;
+};
+
+export async function authPortalLogin(email: string, password: string): Promise<PortalLoginResult> {
+  const em = email.trim();
+  const pw = password.trim();
+  const res = await fetch(`${getApiBase()}/auth/login`, {
+    method: 'POST',
+    headers: JSON_HDR,
+    body: JSON.stringify({ email: em, password: pw }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || `login ${res.status}`);
+  }
+  return res.json() as Promise<PortalLoginResult>;
+}
+
+export async function authSignupCustomer(input: {
+  email: string;
+  password: string;
+  full_name: string;
+  phone?: string;
+}): Promise<{ id: string; email: string; full_name: string; phone?: string | null }> {
+  const res = await fetch(`${getApiBase()}/auth/signup/customer`, {
+    method: 'POST',
+    headers: JSON_HDR,
+    body: JSON.stringify({
+      email: input.email.trim(),
+      password: input.password,
+      full_name: input.full_name.trim(),
+      phone: input.phone?.trim() || undefined,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || `signup ${res.status}`);
+  }
+  return res.json();
+}
+
 function authHeaderBasic(email: string, password: string): string {
   const pair = `${email}:${password}`;
   const g = globalThis as unknown as { btoa?: (s: string) => string };
@@ -101,16 +148,29 @@ export type BackendTicket = {
   site_address?: string | null;
   created_at: string;
   updated_at: string;
+  /** Supabase embed shape from joined selects */
   customers?: BackendCustomer | BackendCustomer[] | null;
+  /** FastAPI `TicketWithCustomer` shape */
+  customer?: BackendCustomer | null;
   technicians?: { id: string; full_name: string; email: string; phone?: string | null; active?: boolean } | null;
+  technician?: {
+    id: string;
+    full_name: string;
+    email: string;
+    phone?: string | null;
+    active?: boolean;
+  } | null;
   latest_admin_reply?: string | null;
   latest_admin_reply_at?: string | null;
 };
 
-function normalizeCustomerEmb<T extends { customers?: unknown }>(row: T): BackendCustomer | null {
-  const c = row.customers;
-  if (Array.isArray(c)) return (c[0] as BackendCustomer) ?? null;
-  if (c && typeof c === 'object') return c as BackendCustomer;
+function normalizeCustomerEmb(row: {
+  customers?: unknown;
+  customer?: unknown;
+}): BackendCustomer | null {
+  const raw = row.customers ?? row.customer;
+  if (Array.isArray(raw)) return (raw[0] as BackendCustomer) ?? null;
+  if (raw && typeof raw === 'object') return raw as BackendCustomer;
   return null;
 }
 
@@ -211,10 +271,28 @@ export async function fetchAdminTechnicians(): Promise<Technician[]> {
   return rows.map((r) => ({
     id: r.id,
     name: r.full_name,
+    email: r.email,
     phone: r.phone ?? '—',
     specialty: 'Field service',
     available: r.active,
   }));
+}
+
+export async function createTechnicianAccountApi(input: {
+  email: string;
+  full_name: string;
+  password: string;
+  phone?: string;
+}): Promise<void> {
+  const res = await fetch(`${getApiBase()}/admin/technicians`, {
+    method: 'POST',
+    headers: adminHeaders(),
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || `create technician ${res.status}`);
+  }
 }
 
 export async function assignTicketApi(ticketId: string, technicianId: string): Promise<void> {

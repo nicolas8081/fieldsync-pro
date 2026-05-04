@@ -15,44 +15,113 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../../navigation/types';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { UserRole } from '../../types/portal';
+import type { UserRole } from '../../types/portal';
 import { ThemeColors } from '../../theme';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { Button } from '../../components/Button';
 import { useClearAllLocalAppData } from '../../hooks/useClearAllLocalAppData';
+import { authPortalLogin, authSignupCustomer } from '../../api/portalApi';
 
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignIn'> };
 
-const ROLES: { role: UserRole; title: string; subtitle: string }[] = [
-  { role: 'customer', title: 'Customer', subtitle: 'Report issues & track tickets' },
-  { role: 'admin', title: 'Admin', subtitle: 'Tickets, technicians, replies' },
-  { role: 'technician', title: 'Technician', subtitle: 'Assigned jobs & 3D viewer' },
-];
+type AuthMode = 'login' | 'signup';
+
+function friendlyErrorMessage(raw: string): string {
+  try {
+    const j = JSON.parse(raw) as { detail?: unknown };
+    const d = j.detail;
+    if (typeof d === 'string') return d;
+    if (Array.isArray(d) && d[0] && typeof (d[0] as { msg?: string }).msg === 'string') {
+      return (d[0] as { msg: string }).msg;
+    }
+  } catch {
+    /* not JSON */
+  }
+  return raw || 'Something went wrong.';
+}
 
 export function SignInScreen({ navigation: _navigation }: Props) {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { signIn } = useAuth();
   const { clearAllLocalData, clearing } = useClearAllLocalAppData();
-  const [role, setRole] = useState<UserRole>('customer');
+  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
-  const [signingIn, setSigningIn] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [phone, setPhone] = useState('');
+  const [busy, setBusy] = useState(false);
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const onSubmit = async () => {
-    if (signingIn) return;
-    setSigningIn(true);
+  const onUnifiedLogin = async () => {
+    const em = email.trim();
+    if (!em) {
+      Alert.alert('Email required', 'Enter the email tied to your account.');
+      return;
+    }
+    if (!password) {
+      Alert.alert('Password required', 'Enter your password.');
+      return;
+    }
+    setBusy(true);
     try {
+      const r = await authPortalLogin(em, password);
+      const role = r.role as UserRole;
       await signIn({
         role,
-        email: email.trim() || `${role}@demo.local`,
-        displayName: displayName.trim() || ROLES.find((r) => r.role === role)?.title || 'User',
+        email: r.email,
+        displayName: r.display_name,
         password,
+        customerId: r.customer_id ?? undefined,
       });
+    } catch (e) {
+      const msg = e instanceof Error ? friendlyErrorMessage(e.message) : 'Could not sign in.';
+      Alert.alert('Sign in failed', msg);
     } finally {
-      setSigningIn(false);
+      setBusy(false);
+    }
+  };
+
+  const onCustomerSignup = async () => {
+    const em = email.trim();
+    const name = displayName.trim();
+    if (!em) {
+      Alert.alert('Email required', 'Customers need an email for their account.');
+      return;
+    }
+    if (!name) {
+      Alert.alert('Display name required', 'This is shown in the app and on tickets.');
+      return;
+    }
+    if (!password || password.length < 8) {
+      Alert.alert('Password', 'Use at least 8 characters.');
+      return;
+    }
+    if (password !== passwordConfirm) {
+      Alert.alert('Password mismatch', 'Both password fields must match.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const acc = await authSignupCustomer({
+        email: em,
+        password,
+        full_name: name,
+        phone: phone.trim() || undefined,
+      });
+      await signIn({
+        role: 'customer',
+        email: acc.email,
+        displayName: acc.full_name,
+        password,
+        customerId: acc.id,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? friendlyErrorMessage(e.message) : 'Could not create account.';
+      Alert.alert('Sign up failed', msg);
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -95,93 +164,108 @@ export function SignInScreen({ navigation: _navigation }: Props) {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-        <Text style={styles.headline}>Choose your portal</Text>
-        <Text style={styles.sub}>
-          {role === 'technician'
-            ? 'Use the technician email and password from your admin-created account (HTTP Basic to the API).'
-            : 'Demo auth — use any email. Technicians need a real password; others can leave it blank.'}
-        </Text>
+          <Text style={styles.headline}>{mode === 'login' ? 'Sign in' : 'Create customer account'}</Text>
 
-        <Text accessibilityRole="text" style={styles.groupLabel}>
-          Portal type
-        </Text>
-        <View style={styles.roleRow} accessibilityRole="radiogroup">
-          {ROLES.map((r) => {
-            const selected = role === r.role;
-            return (
-              <Pressable
-                key={r.role}
-                onPress={() => setRole(r.role)}
-                accessibilityRole="radio"
-                accessibilityLabel={`${r.title}. ${r.subtitle}`}
-                accessibilityState={{ selected, checked: selected }}
-                android_ripple={
-                  Platform.OS === 'android' ? { color: 'rgba(0,0,0,0.08)', borderless: false } : undefined
-                }
-                style={({ pressed }) => [
-                  styles.roleCard,
-                  selected && styles.roleCardOn,
-                  pressed && !selected ? { opacity: 0.92 } : null,
-                  pressed && selected ? { opacity: 0.95 } : null,
-                ]}
-              >
-                <Text style={[styles.roleTitle, selected && styles.roleTitleOn]}>{r.title}</Text>
-                <Text style={styles.roleSub}>{r.subtitle}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+          <View style={styles.segment} accessibilityRole="tablist">
+            <Pressable
+              onPress={() => setMode('login')}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: mode === 'login' }}
+              style={[styles.segmentBtn, mode === 'login' && styles.segmentBtnOn]}
+            >
+              <Text style={[styles.segmentLabel, mode === 'login' && styles.segmentLabelOn]}>Login</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setMode('signup')}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: mode === 'signup' }}
+              style={[styles.segmentBtn, mode === 'signup' && styles.segmentBtnOn]}
+            >
+              <Text style={[styles.segmentLabel, mode === 'signup' && styles.segmentLabelOn]}>Sign up</Text>
+            </Pressable>
+          </View>
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="you@example.com"
-          placeholderTextColor={colors.muted}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          accessibilityLabel="Email"
-          accessibilityHint="Used to match your tickets in this demo"
-        />
-        <Text style={styles.label}>Display name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Your name"
-          placeholderTextColor={colors.muted}
-          value={displayName}
-          onChangeText={setDisplayName}
-          accessibilityLabel="Display name"
-        />
-        <Text style={styles.label}>Password (optional)</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="••••••••"
-          placeholderTextColor={colors.muted}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          accessibilityLabel="Password"
-          accessibilityHint="Optional in this demo"
-        />
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="you@example.com"
+            placeholderTextColor={colors.muted}
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            accessibilityLabel="Email"
+          />
 
-        <Button
-          title="Continue"
-          onPress={onSubmit}
-          loading={signingIn}
-          disabled={signingIn}
-          style={styles.primaryBtnWrap}
-          accessibilityHint="Opens the portal for the selected role"
-        />
-        <Button
-          title="Clear data on this device"
-          variant="secondary"
-          onPress={onClearStorage}
-          loading={clearing}
-          disabled={clearing || signingIn}
-          style={styles.clearBtn}
-          accessibilityHint="Erases FieldSync demo data stored on this phone"
-        />
+          {mode === 'signup' ? (
+            <>
+              <Text style={styles.label}>Display name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="How we should address you"
+                placeholderTextColor={colors.muted}
+                value={displayName}
+                onChangeText={setDisplayName}
+                autoCapitalize="words"
+                accessibilityLabel="Display name"
+              />
+              <Text style={styles.label}>Phone (optional)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="555-0100"
+                placeholderTextColor={colors.muted}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+                accessibilityLabel="Phone"
+              />
+            </>
+          ) : null}
+
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="••••••••"
+            placeholderTextColor={colors.muted}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            accessibilityLabel="Password"
+          />
+
+          {mode === 'signup' ? (
+            <>
+              <Text style={styles.label}>Confirm password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Re-enter password"
+                placeholderTextColor={colors.muted}
+                value={passwordConfirm}
+                onChangeText={setPasswordConfirm}
+                secureTextEntry
+                accessibilityLabel="Confirm password"
+              />
+            </>
+          ) : null}
+
+          <Button
+            title={mode === 'login' ? 'Sign in' : 'Create account'}
+            onPress={() => void (mode === 'login' ? onUnifiedLogin() : onCustomerSignup())}
+            loading={busy}
+            disabled={busy}
+            style={styles.primaryBtn}
+            accessibilityHint={mode === 'login' ? 'Signs in using the API' : 'Registers a new customer'}
+          />
+
+          <Button
+            title="Clear data on this device"
+            variant="secondary"
+            onPress={onClearStorage}
+            loading={clearing}
+            disabled={clearing || busy}
+            style={styles.clearBtn}
+            accessibilityHint="Erases FieldSync demo data stored on this phone"
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -199,21 +283,20 @@ function createStyles(colors: ThemeColors) {
     scroll: { paddingHorizontal: 24, paddingTop: 20 },
     topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
     logo: { fontSize: 22, fontWeight: '800', color: colors.accent },
-    headline: { fontSize: 26, fontWeight: '700', color: colors.text, marginBottom: 8 },
-    sub: { fontSize: 15, color: colors.textSecondary, marginBottom: 20 },
-    groupLabel: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 8 },
-    roleRow: { gap: 10, marginBottom: 20 },
-    roleCard: {
-      borderWidth: 2,
+    headline: { fontSize: 26, fontWeight: '700', color: colors.text, marginBottom: 20 },
+    segment: {
+      flexDirection: 'row',
+      marginBottom: 20,
+      borderRadius: 12,
+      borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 14,
-      padding: 14,
-      backgroundColor: colors.card,
+      overflow: 'hidden',
+      backgroundColor: colors.surface,
     },
-    roleCardOn: { borderColor: colors.accent, backgroundColor: colors.accentLight },
-    roleTitle: { fontSize: 17, fontWeight: '700', color: colors.text },
-    roleTitleOn: { color: colors.accent },
-    roleSub: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+    segmentBtn: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+    segmentBtnOn: { backgroundColor: colors.accentLight },
+    segmentLabel: { fontSize: 15, fontWeight: '700', color: colors.textSecondary },
+    segmentLabelOn: { color: colors.accent },
     label: { fontSize: 13, fontWeight: '600', color: colors.textSecondary, marginBottom: 6, marginTop: 10 },
     input: {
       borderWidth: 1,
@@ -224,7 +307,7 @@ function createStyles(colors: ThemeColors) {
       color: colors.text,
       backgroundColor: colors.surface,
     },
-    primaryBtnWrap: { marginTop: 24 },
+    primaryBtn: { marginTop: 24 },
     clearBtn: { marginTop: 12 },
   });
 }

@@ -7,6 +7,7 @@ import { usePortalData } from '../../context/PortalDataContext';
 import { ThemeColors } from '../../theme';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
+import { formatTicketRef, ticketRefLine } from '../../utils/ticketDisplay';
 
 export function CustomerTicketsScreen() {
   const { colors } = useTheme();
@@ -54,9 +55,9 @@ export function CustomerTicketsScreen() {
         renderItem={({ item }) => (
           <View
             style={styles.card}
-            accessibilityLabel={`Ticket ${item.id}, ${item.status}. ${item.problemDescription}`}
+            accessibilityLabel={`Ticket ref ${formatTicketRef(item.id)}, ${item.status}. ${item.problemDescription}`}
           >
-            <Text style={styles.cardId}>{item.id}</Text>
+            <Text style={styles.cardId}>{ticketRefLine(item.id)}</Text>
             <Text style={styles.cardStatus}>{item.status.toUpperCase()}</Text>
             <Text style={styles.cardProblem} numberOfLines={3}>{item.problemDescription}</Text>
             <Text style={styles.cardMeta}>{new Date(item.createdAt).toLocaleString()}</Text>

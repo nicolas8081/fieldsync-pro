@@ -11,6 +11,7 @@ import { usePortalData } from '../context/PortalDataContext';
 import { ThemeColors } from '../theme';
 import { Job } from '../types/job';
 import { announceForA11y } from '../utils/a11y';
+import { ticketRefLine } from '../utils/ticketDisplay';
 import { fetchDiagnosis, DiagnosisResult } from '../api/diagnosis';
 
 type Props = NativeStackScreenProps<TechnicianStackParamList, 'JobDetail'>;
@@ -160,7 +161,7 @@ export function JobDetailScreen({ route, navigation }: Props) {
           </View>
           {linkedTicket ? (
             <Text style={styles.statusTicketHint}>
-              Linked ticket {linkedTicket.id} · admin sees {linkedTicket.status.replace(/_/g, ' ')}
+              Linked ticket {ticketRefLine(linkedTicket.id)} · admin sees {linkedTicket.status.replace(/_/g, ' ')}
             </Text>
           ) : (
             <Text style={styles.statusTicketHint}>Demo route job — status is saved on this device only.</Text>

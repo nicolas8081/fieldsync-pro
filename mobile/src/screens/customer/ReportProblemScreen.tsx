@@ -19,6 +19,7 @@ import { ThemeColors } from '../../theme';
 import { Button } from '../../components/Button';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
 import { announceForA11y } from '../../utils/a11y';
+import { formatTicketRef, ticketRefLine } from '../../utils/ticketDisplay';
 
 type Props = {
   navigation: NativeStackNavigationProp<CustomerHomeStackParamList, 'ReportProblem'>;
@@ -72,7 +73,7 @@ export function ReportProblemScreen({ navigation }: Props) {
       });
       const elapsed = Date.now() - start;
       await new Promise((r) => setTimeout(r, Math.max(0, 280 - elapsed)));
-      announceForA11y(`Ticket submitted. Reference ${t.id}.`);
+      announceForA11y(`Ticket submitted. Reference ${formatTicketRef(t.id)}.`);
       setSubmittedTicketId(t.id);
       setSubmitPhase('submitted');
       homeNavTimerRef.current = setTimeout(() => {
@@ -206,7 +207,7 @@ export function ReportProblemScreen({ navigation }: Props) {
           />
           {submitPhase === 'submitted' && submittedTicketId ? (
             <Text style={styles.submittedNote}>
-              Reference {submittedTicketId}. Taking you home…
+              {ticketRefLine(submittedTicketId)}. Taking you home…
             </Text>
           ) : null}
         </ScrollView>

@@ -5,10 +5,11 @@ Interactive docs: `http://localhost:8000/docs`
 
 **Setup**
 
-1. Run `sql/schema.sql` in the Supabase SQL Editor (creates `customers`, `technicians`, `tickets`, `ticket_messages`).
+1. Run `sql/schema.sql` in the Supabase SQL Editor (creates core tables plus `admins` and triggers PostgREST schema reload via `NOTIFY pgrst, 'reload schema';`). Or run `sql/migration_admins_table.sql` if you added everything else manually — that migration includes the same NOTIFY. If `customers` already exists without `password_hash`, run `sql/migration_add_customer_password.sql`.
 2. Set `.env`: `SUPABASE_URL`, `SUPABASE_KEY` (service role or key with access to these tables).
 3. **Admin routes:** set `ADMIN_API_KEY` in `.env` and send header `X-Admin-Key: <value>`. If `ADMIN_API_KEY` is **unset**, admin endpoints are open (dev-only; set the key for any shared/staging/prod use).
-4. **Technician routes:** HTTP Basic auth — **username** = technician `email`, **password** = the password set when the technician was created (`POST /admin/technicians`).
+4. **Mobile admin login:** optional `ADMIN_PORTAL_PASSWORD` (and optional `ADMIN_PORTAL_EMAIL`, default `admin@fieldsync.local`) — used by `POST /auth/login` before technician/customer lookup. For demos you can set `ADMIN_PORTAL_PASSWORD` to the same value as `ADMIN_API_KEY`.
+5. **Technician routes:** HTTP Basic auth — **username** = technician `email`, **password** = the password set when the technician was created (`POST /admin/technicians`).
 
 ---
 
@@ -18,6 +19,11 @@ Interactive docs: `http://localhost:8000/docs`
 |------|--------|-----|------|---------|
 | Root | GET | `/` | — | API metadata |
 | Health | GET | `/health` | — | Health + DB probe (`common_issues`) |
+| Auth | POST | `/auth/login` | — | Unified portal login (JSON `email`, `password`) — role from `admins` table, env portal password, `technicians`, or `customers` |
+| Auth | POST | `/auth/signup/customer` | — | Customer registration (JSON `email`, `password`, `full_name`, optional `phone`). Claims rows created without a password via ticket flow. |
+| Auth | POST | `/auth/bootstrap-admin` | — | **First admin only.** JSON `bootstrap_secret`, `email`, `password` (≥8), `full_name`. Requires **`ADMIN_BOOTSTRAP_SECRET`** in backend `.env`. |
+| Admin | POST | `/admin/admins` | `X-Admin-Key`* | Create additional portal admins (stored in **`admins`**; same credentials work on **`/auth/login`**) |
+| Admin | GET | `/admin/admins` | `X-Admin-Key`* | List portal admins (no passwords) |
 | Diagnosis | POST | `/api/diagnose` | — | AI / rules diagnosis (existing) |
 | Customer | GET | `/customer/account` | — | Lookup customer by `email` query (returns id for the app) |
 | Customer | GET | `/customer/tickets` | — | List tickets + optional latest admin reply preview (`customer_id` query) |

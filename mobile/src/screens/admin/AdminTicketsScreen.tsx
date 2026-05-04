@@ -12,6 +12,7 @@ import { ThemeToggle } from '../../components/ThemeToggle';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
 import { Ticket } from '../../types/portal';
 import { isTicketClosed, isTicketOpen } from '../../utils/ticketFilters';
+import { formatTicketRef, ticketRefLine } from '../../utils/ticketDisplay';
 
 type AdminTicketsNav = CompositeNavigationProp<
   BottomTabNavigationProp<AdminTabParamList, 'AdminTickets'>,
@@ -108,11 +109,11 @@ export function AdminTicketsScreen() {
             ]}
             onPress={() => open(item)}
             accessibilityRole="button"
-            accessibilityLabel={`Ticket ${item.id}, ${item.status}. ${item.customerName}. ${item.problemDescription}`}
+            accessibilityLabel={`Ticket ref ${formatTicketRef(item.id)}, ${item.status}. ${item.customerName}. ${item.problemDescription}`}
             accessibilityHint="Opens ticket details"
           >
             <View style={styles.row}>
-              <Text style={[styles.id, view === 'past' && styles.idPast]}>{item.id}</Text>
+              <Text style={[styles.id, view === 'past' && styles.idPast]}>{ticketRefLine(item.id)}</Text>
               <Text
                 style={[
                   styles.badge,

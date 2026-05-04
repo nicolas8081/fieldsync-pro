@@ -10,6 +10,7 @@ import { ThemeToggle } from '../../components/ThemeToggle';
 import { AccessiblePressable } from '../../components/AccessiblePressable';
 import { usePortalData } from '../../context/PortalDataContext';
 import { isTicketOpen } from '../../utils/ticketFilters';
+import { formatTicketRef, ticketRefLine } from '../../utils/ticketDisplay';
 
 type Props = {
   navigation: NativeStackNavigationProp<CustomerHomeStackParamList, 'CustomerHome'>;
@@ -21,11 +22,15 @@ export function CustomerHomeScreen({ navigation }: Props) {
   const { getTicketsForCustomerEmail } = usePortalData();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const openTickets = useMemo(() => {
+  const openTicketsSorted = useMemo(() => {
     return getTicketsForCustomerEmail(user?.email ?? '')
       .filter(isTicketOpen)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [getTicketsForCustomerEmail, user?.email]);
+
+  /** Home surfaces only the latest open item; full queue lives under Tickets. */
+  const latestOpenTicket = openTicketsSorted[0] ?? null;
+  const openTicketCount = openTicketsSorted.length;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -51,20 +56,27 @@ export function CustomerHomeScreen({ navigation }: Props) {
 
         <Text style={styles.section}>What do you need?</Text>
 
-        {openTickets.length > 0 ? (
+        {latestOpenTicket ? (
           <View style={styles.openSection}>
             <Text style={styles.openSectionTitle}>Open requests</Text>
-            <Text style={styles.openSectionSub}>Not yet resolved — same tickets appear under the Tickets tab with full history.</Text>
-            {openTickets.map((t) => (
-              <View key={t.id} style={styles.openTicketCard} accessibilityLabel={`Open ticket ${t.id}, ${t.status}`}>
-                <Text style={styles.openTicketId}>{t.id}</Text>
-                <Text style={styles.openTicketStatus}>{t.status.replace(/_/g, ' ').toUpperCase()}</Text>
-                <Text style={styles.openTicketProblem} numberOfLines={2}>
-                  {t.problemDescription}
-                </Text>
-                <Text style={styles.openTicketMeta}>{new Date(t.createdAt).toLocaleString()}</Text>
-              </View>
-            ))}
+            <Text style={styles.openSectionSub}>
+              {openTicketCount > 1
+                ? `Showing your latest of ${openTicketCount} open requests. All of them appear on the Tickets tab.`
+                : 'Not yet resolved — same ticket appears under the Tickets tab with full history.'}
+            </Text>
+            <View
+              style={styles.openTicketCard}
+              accessibilityLabel={`Open ticket ref ${formatTicketRef(latestOpenTicket.id)}, ${latestOpenTicket.status}`}
+            >
+              <Text style={styles.openTicketId}>{ticketRefLine(latestOpenTicket.id)}</Text>
+              <Text style={styles.openTicketStatus}>
+                {latestOpenTicket.status.replace(/_/g, ' ').toUpperCase()}
+              </Text>
+              <Text style={styles.openTicketProblem} numberOfLines={2}>
+                {latestOpenTicket.problemDescription}
+              </Text>
+              <Text style={styles.openTicketMeta}>{new Date(latestOpenTicket.createdAt).toLocaleString()}</Text>
+            </View>
             <AccessiblePressable
               style={styles.seeAllTickets}
               onPress={() => navigation.getParent()?.navigate('CustomerTickets')}
