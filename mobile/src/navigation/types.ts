@@ -1,7 +1,7 @@
 export type TechnicianStackParamList = {
   JobList: undefined;
   JobDetail: { jobId: string };
-  Viewer3D: { jobId: string; modelUrl: string };
+  Viewer3D: { jobId: string; modelUrl: string; affectedParts?: string };
 };
 
 export type AuthStackParamList = {

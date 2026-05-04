@@ -24,6 +24,7 @@ class SuggestedIssue(BaseModel):
     tools_required: Optional[str] = None
     symptoms: Optional[str] = None
     possible_causes: Optional[str] = None
+    affected_parts_3d: Optional[str] = None 
 
 class DiagnoseResponse(BaseModel):
     error_code_match: Optional[ErrorCodeMatch] = None

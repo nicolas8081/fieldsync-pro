@@ -13,7 +13,7 @@ import { announceForA11y } from '../utils/a11y';
 type Props = NativeStackScreenProps<TechnicianStackParamList, 'Viewer3D'>;
 
 export function Viewer3DScreen({ route, navigation }: Props) {
-  const { modelUrl } = route.params;
+  const { modelUrl, affectedParts } = route.params;
   const { colors } = useTheme();
   const [qualityRating, setQualityRating] = useState<number | null>(null);
   const [feedback, setFeedback] = useState('');
@@ -55,10 +55,7 @@ export function Viewer3DScreen({ route, navigation }: Props) {
         </View>
 
         <View style={styles.viewer}>
-          <WasherViewer modelUrl={modelUrl} />
-          <View style={styles.vcontrols}>
-            <View style={styles.vctrl}><Text style={styles.vctrlText}>↻ Drag to Rotate</Text></View>
-          </View>
+          <WasherViewer modelUrl={modelUrl} affectedParts={affectedParts} />
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -180,24 +177,6 @@ function createStyles(colors: ThemeColors) {
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    vcontrols: {
-      position: 'absolute',
-      bottom: 12,
-      left: 0,
-      right: 0,
-      flexDirection: 'row',
-      justifyContent: 'center',
-    },
-    vctrl: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 13,
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      opacity: 0.85,
-    },
-    vctrlText: { fontSize: 14, color: colors.text },
     scroll: { flex: 1 },
     content: { padding: 21, paddingBottom: 52 },
     partCard: {

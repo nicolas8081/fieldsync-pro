@@ -12,6 +12,7 @@ export interface CommonIssue {
   tools_required?: string;
   symptoms?: string;
   possible_causes?: string;
+  affected_parts_3d?: string;
 }
 
 export interface ErrorCodeInfo {

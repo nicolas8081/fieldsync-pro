@@ -69,6 +69,14 @@ export function JobDetailScreen({ route, navigation }: Props) {
   const isHigh = job.severity === 'high';
   const linkedTicket = findTicketForJobId(job.id);
 
+  // Collect all affected parts from all diagnosis results
+  const allAffectedParts = diagnosis
+  .map((d) => d.issue.affected_parts_3d ?? '')
+  .filter(Boolean)
+  .join('|');
+
+console.log('=== diagnosis:', diagnosis.length, 'allAffectedParts:', allAffectedParts);
+
   const applyStatus = (status: Job['status']) => {
     setTechnicianJobStatus(job.id, status);
     const labels: Record<Job['status'], string> = {
@@ -288,11 +296,12 @@ export function JobDetailScreen({ route, navigation }: Props) {
                   navigation.navigate('Viewer3D', {
                     jobId: job.id,
                     modelUrl: job.modelUrl ?? '',
+                    affectedParts: allAffectedParts,
                   })
                 }
                 style={styles.view3dBtn}
                 accessibilityLabel="View three D model"
-                accessibilityHint="Opens the washer GLB in the 3D viewer"
+                accessibilityHint="Opens the washer GLB in the 3D viewer with highlighted zones"
               />
             </>
           )}

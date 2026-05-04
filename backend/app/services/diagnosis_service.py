@@ -221,18 +221,19 @@ def diagnose_issue(
             if issue_id in issues_by_id:
                 issue = issues_by_id[issue_id]
                 suggested_issues.append({
-                    "issue_id": issue["id"],
-                    "issue_name": issue["issue_name"],
-                    "category": issue.get("category", "Other"),
-                    "confidence": confidence,
-                    "severity": issue.get("severity", "medium"),
-                    "diy_difficulty": issue.get("diy_difficulty", "moderate"),
-                    "estimated_time": issue.get("estimated_time_minutes", 30),
-                    "parts_needed": issue.get("parts_needed"),
-                    "tools_required": issue.get("tools_required"),
-                    "symptoms": issue.get("symptoms"),
-                    "possible_causes": issue.get("possible_causes")
-                })
+    "issue_id": issue["id"],
+    "issue_name": issue["issue_name"],
+    "category": issue.get("category", "Other"),
+    "confidence": confidence,
+    "severity": issue.get("severity", "medium"),
+    "diy_difficulty": issue.get("diy_difficulty", "moderate"),
+    "estimated_time": issue.get("estimated_time_minutes", 30),
+    "parts_needed": issue.get("parts_needed"),
+    "tools_required": issue.get("tools_required"),
+    "symptoms": issue.get("symptoms"),
+    "possible_causes": issue.get("possible_causes"),
+    "affected_parts_3d": issue.get("affected_parts_3d"),  # add this
+})
     
     else:
         # Fallback to keyword matching
